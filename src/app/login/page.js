@@ -60,14 +60,14 @@ export default function LoginPage() {
         )}
         <input
           type="email"
-          placeholder="Email"
+          placeholder="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className={styles.input}
           />
         <input
           type="password"
-          placeholder="Password"
+          placeholder="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className={styles.input}

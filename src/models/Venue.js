@@ -34,6 +34,6 @@ const venueSchema = new Schema(
         }
     }
 );
-const Venue = model("Venue", venueSchema);
+const Venue = model.Venue ||  model("Venue", venueSchema);
 export {seatSchema};
 export default Venue;

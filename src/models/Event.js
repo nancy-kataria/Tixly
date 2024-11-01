@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { models } from "mongoose";
 import {seatSchema} from "./Venue.js";
 const {Schema, SchemaTypes, model} = mongoose;
 
@@ -28,5 +28,5 @@ const eventSchema = new Schema (
     }
 );
 
-const Event = model("Event", eventSchema);
+const Event = models.Event || model("Event", eventSchema);
 export default Event;
