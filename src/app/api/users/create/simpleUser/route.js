@@ -1,3 +1,4 @@
+//Only required fields
 import connectDB from '@/lib/mongooseDB';
 import User from '@/models/Users';
 

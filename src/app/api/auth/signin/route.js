@@ -2,7 +2,7 @@ import connectDB from '@/lib/mongooseDB';
 import User from '@/models/Users';
 
 export async function POST(request) {
-    console.log("Here");
+    console.log("User Sign in Post request Called");
   await connectDB();
   const { email, password } = await request.json();
 

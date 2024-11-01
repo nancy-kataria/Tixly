@@ -20,25 +20,32 @@ flex-direction: column;
 
 /* Input field styling */
 .input {
-padding: 0.5rem;
-margin-bottom: 1rem;
-border: 1px solid #ccc;
-border-radius: 4px;
-font-size: 1rem;
+    width: auto;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    color: #000000;                 /* Darker text color */
+    background-color: #fff;      /* White background */
+    border: 1px solid #ccc;      /* Light border */
+    border-radius: 4px;          /* Optional: rounded corners */
+    font-size: 1rem;
+  }
+.input::placeholder {
+    color: #666262b2;                 /* Lighter color for placeholder */
 }
-
 /* Select dropdown styling */
 .select {
 padding: 0.5rem;
 margin-bottom: 1rem;
-border: 1px solid #ccc;
+color: #333;                 /* Darker text color */
+background-color: #fff;      /* White background */
+border: 1px solid #ccc;  
 border-radius: 4px;
 font-size: 1rem;
 }
 
 /* Button styling */
 .button {
-padding: 0.5rem;
+padding: 1rem;
 background-color: #0070f3;
 color: white;
 border: none;

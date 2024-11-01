@@ -6,8 +6,8 @@ const {Schema, SchemaTypes, model} = mongoose;
 const ticketSchema = new Schema({
     _id: {type:SchemaTypes.ObjectId, auto: true},
     seat: seatSchema,
-    price: Number,
-    status: String
+    price: {type:Number, default: 0},
+    status: {type:String, default: "Available"} //Available, sold
 });
 
 
@@ -21,12 +21,11 @@ const eventSchema = new Schema (
         eventName : String,
         eventDate : Date,
 
-        tickets : [
-            ticketSchema
-        ]
+        tickets : [ticketSchema]
 
     }
 );
 
 const Event = models.Event || model("Event", eventSchema);
+export {ticketSchema};
 export default Event;
