@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-const {Schema, SchemaTypes, model} = mongoose;
+const {Schema, SchemaTypes, model, models} = mongoose;
 
 const seatSchema = new Schema({
     _id: false,
@@ -34,6 +34,6 @@ const venueSchema = new Schema(
         }
     }
 );
-const Venue = model.Venue ||  model("Venue", venueSchema);
+const Venue = models.Venue ||  model("Venue", venueSchema);
 export {seatSchema};
 export default Venue;
