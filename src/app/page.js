@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import concert from '../../public/concert.jpg'
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function HomePage() {
   const router = useRouter();
@@ -19,12 +20,12 @@ export default function HomePage() {
   return (
     <>
     <Navbar />
-    <div style={{ padding: '2rem', textAlign: 'center' }}>
+    <div style={{ padding: '2rem', textAlign: 'center' }} className='min-h-screen bg-gray-100'>
      
       <h1>Welcome to Event Finder</h1>
 
       {/* Search Bar */}
-      <input
+      {/* <input
         type="text"
         placeholder="Search for events..."
         value={query}
@@ -33,7 +34,7 @@ export default function HomePage() {
       />
       <button onClick={handleSearch} style={{ padding: '0.5rem 1rem' }}>
         Search
-      </button>
+      </button> */}
 
       {/* Display search results */}
       <ul style={{ listStyle: 'none', padding: 0, marginTop: '1rem' }}>
@@ -51,6 +52,7 @@ export default function HomePage() {
         ))}
       </ul>
 
+    <Link href="/event">
     <div className="w-full max-w-lg p-4 bg-white border border-gray-300 rounded-lg shadow-md flex items-center space-x-4">
       {/* Event Image */}
       <Image
@@ -71,6 +73,7 @@ export default function HomePage() {
         </div>
       </div>
     </div>
+    </Link>
     </div>
     </>
   );
