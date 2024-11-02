@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Navbar from '@/components/Navbar';
 
 export default function HomePage() {
   const router = useRouter();
@@ -14,7 +15,10 @@ export default function HomePage() {
   };
 
   return (
+    <>
+    <Navbar />
     <div style={{ padding: '2rem', textAlign: 'center' }}>
+     
       <h1>Welcome to Event Finder</h1>
 
       {/* Search Bar */}
@@ -53,5 +57,6 @@ export default function HomePage() {
         Testing
       </button>
     </div>
+    </>
   );
 }
