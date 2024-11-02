@@ -35,10 +35,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{ padding: '2rem', textAlign: 'center' }}>
-      <h1>{isLogin ? 'Sign In' : 'Sign Up'}</h1>
+    <div className="flex flex-col items-center justify-center min-h-screen p-8 bg-gray-100">
+    <div className="w-full max-w-md p-6 space-y-6 bg-white rounded-lg shadow-md">
+      <h1 className="text-2xl font-semibold text-center text-gray-700">
+        {isLogin ? 'Sign In' : 'Sign Up'}
+      </h1>
 
-      <form onSubmit={handleSubmit} style={{ display: 'inline-block', textAlign: 'left' }}>
+      {/* Sign in and Sign up Forms */}
+      <form onSubmit={handleSubmit} className="space-y-4">
         {!isLogin && (
           <>
             <input
@@ -46,12 +50,12 @@ export default function LoginPage() {
               placeholder="Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className={styles.input}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-400"
             />
             <select
               value={userType}
               onChange={(e) => setUserType(e.target.value)}
-              className={styles.input}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-400"
             >
               <option value="User">User</option>
               <option value="Organizer">Organizer</option>
@@ -60,29 +64,33 @@ export default function LoginPage() {
         )}
         <input
           type="email"
-          placeholder="email"
+          placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className={styles.input}
-          />
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-400"
+        />
         <input
           type="password"
-          placeholder="password"
+          placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className={styles.input}
-          />
-        <button type="submit" style={{ padding: '0.5rem 1rem', marginTop: '1rem' }}>
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-400"
+        />
+        <button
+          type="submit"
+          className="w-full py-2 mt-4 font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600"
+        >
           {isLogin ? 'Sign In' : 'Sign Up'}
         </button>
       </form>
 
       <button
         onClick={() => setIsLogin(!isLogin)}
-        style={{ display: 'block', marginTop: '1rem', color: '#0070f3' }}
+        className="w-full mt-4 text-sm font-medium text-blue-500 hover:underline"
       >
         {isLogin ? 'Create an account' : 'Have an account? Login'}
       </button>
     </div>
+  </div>
   );
 }
