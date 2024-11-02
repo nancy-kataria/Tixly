@@ -1,9 +1,39 @@
 import Image from "next/image";
 import concert from "../../../public/concert.jpg"
 import Navbar from "@/components/Navbar";
+// import { useRouter } from "next/router";
+// import { useEffect, useState } from "react";
 
 // pages/EventPage.js
 export default function EventPage() {
+  // const router = useRouter();
+  // const { id } = router.query;
+
+  // const [event, setEvent] = useState({})
+
+  // useEffect(()=>{
+  //   const getRequest = async() => {
+      
+  //     try {
+  //         const url = `/api/events/get/eventID/${id}`;
+  //         const res = await fetch(url, {method: `GET`});
+  //         const data = await res.json();
+  //         console.log(data)
+  //         if (res.ok)
+  //         {
+  //             setEvent(data);
+  //         }
+  //         else setEvent({})
+  //     }
+  //     catch(e)
+  //     {
+  //         console.error(e)
+  //     }
+  //   }
+
+  //   getRequest()
+  // },[])
+  
     return (
       <>
       <Navbar />
