@@ -11,6 +11,9 @@ export default function UserTestingPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [address, setAddress] = useState('');
+
   const [userType, setUserType] = useState('User');
   const [jsonData, setJsonData] = useState(null);
 
@@ -43,7 +46,7 @@ export default function UserTestingPage() {
     e.preventDefault();
     console.log("User POST request");
 
-    const payload = { name, email, password, userType };
+    const payload = { name, email, password, phone:phoneNumber, address, userType};
     try {
       const res = await fetch('/api/users/create/simpleUser', {
         method: 'POST',
@@ -103,7 +106,7 @@ export default function UserTestingPage() {
           className={styles.input}
         />
         <input
-          type="text"
+          type="email"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -114,6 +117,20 @@ export default function UserTestingPage() {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          className={styles.input}
+        />
+        <input
+          type="tel"
+          placeholder="1111111111"
+          value={phoneNumber}
+          onChange={(e) => setPhoneNumber(e.target.value)}
+          className={styles.input}
+        />
+        <input
+          type="text"
+          placeholder="111 test st"
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
           className={styles.input}
         />
         <select

@@ -5,15 +5,12 @@ import User from '@/models/Users';
 export async function POST(request) {
     console.log("User Sign Up Post Request Called");
   await connectDB();
-  const { name, email, password, userType } = await request.json();
+  const data = await request.json();
+ // const { name, email, password, userType } = await request.json();
 
 
-  const newUser = new User({
-    name,
-    email,
-    password,
-    userType
-  });
+  //const newUser = new User({name,email, password,userType});
+  const newUser = new User(data);
   
   try {
     console.log("hello");
