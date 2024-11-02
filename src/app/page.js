@@ -2,6 +2,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
+import concert from '../../public/concert.jpg'
+import Image from 'next/image';
 
 export default function HomePage() {
   const router = useRouter();
@@ -36,26 +38,39 @@ export default function HomePage() {
       {/* Display search results */}
       <ul style={{ listStyle: 'none', padding: 0, marginTop: '1rem' }}>
         {results.map((event) => (
-          <li key={event._id} style={{ margin: '0.5rem 0' }}>
-            <strong>{event.name}</strong> - {event.location} ({new Date(event.date).toLocaleDateString()})
-          </li>
+          <div key={event._id} className="w-full max-w-lg p-6 bg-white border border-gray-300 rounded-lg shadow-md">
+          {/* Event Name */}
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">{event.name}</h2>
+          
+          {/* Date and Venue */}
+          <div className="text-gray-600">
+            <p className="text-sm font-medium mb-1">📅 Date: ({new Date(event.date).toLocaleDateString()})</p>
+            <p className="text-sm font-medium">📍 Venue: {event.location}</p>
+          </div>
+        </div>
         ))}
       </ul>
 
-      {/* Login Button */}
-      <button
-        onClick={() => router.push('/login')}
-        style={{ marginTop: '2rem', padding: '0.5rem 1rem', backgroundColor: '#0070f3', color: '#fff', border: 'none', cursor: 'pointer' }}
-      >
-        Login / Signup
-      </button>
-      <div></div>
-      <button
-        onClick={() => router.push('/testing')}
-        style={{ marginTop: '2rem', padding: '0.5rem 1rem', backgroundColor: '#0070f3', color: '#fff', border: 'none', cursor: 'pointer' }}
-      >
-        Testing
-      </button>
+    <div className="w-full max-w-lg p-4 bg-white border border-gray-300 rounded-lg shadow-md flex items-center space-x-4">
+      {/* Event Image */}
+      <Image
+        src={concert}
+        alt="concert-image"
+        className="w-24 h-24 rounded-lg object-cover"
+      />
+
+      {/* Event Details */}
+      <div>
+        {/* Event Name */}
+        <h2 className="text-2xl font-bold text-gray-800">Event Name</h2>
+
+        {/* Date and Venue */}
+        <div className="text-gray-600 mt-2">
+          <p className="text-sm font-medium">📅 Date: 01-01-2025</p>
+          <p className="text-sm font-medium">📍 Venue: New York</p>
+        </div>
+      </div>
+    </div>
     </div>
     </>
   );
