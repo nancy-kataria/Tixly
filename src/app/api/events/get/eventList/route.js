@@ -12,12 +12,13 @@ export async function GET(request) {
                 select: 'name address',
             })
             .exec();
+        console.log(events)
         const eventList = events.map(event => ({
             _id: event._id,
-            EventName: event.eventName,
-            EventDate: event.eventDate,
-            Venue: event.venue ? event.venue.name : null,
-            Address: event.venue ? event.venue.address : null,
+            eventName: event.eventName,
+            eventDate: event.eventDate ? event.eventDate: null,
+            venue: event.venue ? event.venue.name : null,
+            address: event.venue ? event.venue.address : null,
         }));
         return new Response(JSON.stringify(eventList), { status: 200 });
     } catch (error) {

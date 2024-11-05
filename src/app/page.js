@@ -76,15 +76,15 @@ export default function HomePage() {
               <div>
                 {/* Event Name */}
                 <h2 className="text-2xl font-bold text-gray-800">
-                  {event.EventName}
+                  {event.eventName}
                 </h2>
 
                 {/* Date and Venue */}
                 <div className="text-gray-600 mt-2">
                   <p className="text-sm font-medium">
-                    📅 Date: ({new Date(event.EventDate).toLocaleDateString()})
+                    📅 Date: ({new Date(event.eventDate).toLocaleDateString()})
                   </p>
-                  <p className="text-sm font-medium">📍 Venue: {event.Venue}</p>
+                  <p className="text-sm font-medium">📍 Venue: {event.venue}</p>
                 </div>
               </div>
             </div>
