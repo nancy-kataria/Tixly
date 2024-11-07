@@ -63,6 +63,7 @@ export default function HomePage() {
           {results.map((event) => (
             <div
               key={event._id}
+              onClick={()=>{router.push(`/event/${event._id}`)}}
               className="w-full max-w-lg p-4 bg-white border border-gray-300 rounded-lg shadow-md flex items-center space-x-4"
             >
               {/* Event Image */}
