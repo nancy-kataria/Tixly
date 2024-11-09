@@ -1,40 +1,35 @@
+// To use react hooks
+"use client";
+
 import Image from "next/image";
 import concert from "../../../../public/concert.jpg";
 import Navbar from "@/components/Navbar";
-// import { useRouter } from "next/router";
-// import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 // pages/EventPage.js
-export default async function EventPage({ params }) {
-  // const router = useRouter();
-  // const { id } = params.id;
-    console.log((await params).id)
-  // const [event, setEvent] = useState({})
+export default function EventPage({ params }) {
+  const [event, setEvent] = useState({});
 
-  // useEffect(()=>{
-  //   const getRequest = async() => {
+  useEffect(() => {
+    const getRequest = async () => {
+      const eventId = (await params).id;
 
-  //     try {
-  //         const url = `/api/events/get/eventID/${id}`;
-  //         const res = await fetch(url, {method: `GET`});
-  //         const data = await res.json();
-  //         console.log(data)
-  //         if (res.ok)
-  //         {
-  //             setEvent(data);
-  //         }
-  //         else setEvent({})
-  //     }
-  //     catch(e)
-  //     {
-  //         console.error(e)
-  //     }
-  //   }
+      try {
+        const url = `/api/events/get/eventID/${eventId}`;
+        const res = await fetch(url, { method: `GET` });
+        const data = await res.json();
+        if (res.ok) {
+          setEvent(data);
+        } else setEvent({});
+      } catch (e) {
+        console.error(e);
+      }
+    };
 
-  //   getRequest()
-  // },[])
+    getRequest();
+  }, [params]);
 
-  // console.log(id);
+  console.log(event);
 
   return (
     <>
@@ -51,16 +46,16 @@ export default async function EventPage({ params }) {
 
         {/* Event Details */}
         <div className="w-full max-w-2xl bg-white mt-6 p-6 rounded-lg shadow-lg">
-          <h1 className="text-3xl font-bold text-gray-800">Event Name</h1>
+          <h1 className="text-3xl font-bold text-gray-800">{event.eventName}</h1>
           <p className="text-gray-600 mt-2">
-            <span className="font-semibold">📍 Venue:</span> Yankee Stadium
+            <span className="font-semibold">📍 Venue:</span> {event?.venue?.name}
           </p>
           <p className="text-gray-600 mt-1">
-            <span className="font-semibold">📌 Address:</span> New York
+            <span className="font-semibold">📌 Address:</span> {event?.venue?.address}
           </p>
           <p className="text-gray-600 mt-1">
             <span className="font-semibold">🎫 Total Tickets Available:</span>{" "}
-            33
+            {event?.venue?.seats?.length}
           </p>
         </div>
       </div>
