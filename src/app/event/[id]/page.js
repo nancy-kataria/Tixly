@@ -46,16 +46,23 @@ export default function EventPage({ params }) {
 
         {/* Event Details */}
         <div className="w-full max-w-2xl bg-white mt-6 p-6 rounded-lg shadow-lg">
-          <h1 className="text-3xl font-bold text-gray-800">{event.eventName}</h1>
+          <h1 className="text-3xl font-bold text-gray-800">
+            {event.eventName}
+          </h1>
           <p className="text-gray-600 mt-2">
-            <span className="font-semibold">📍 Venue:</span> {event?.venue?.name}
+            <span className="font-semibold">📍 Venue:</span>{" "}
+            {event?.venue?.name}
           </p>
           <p className="text-gray-600 mt-1">
-            <span className="font-semibold">📌 Address:</span> {event?.venue?.address}
+            <span className="font-semibold">📌 Address:</span>{" "}
+            {event?.venue?.address}
           </p>
           <p className="text-gray-600 mt-1">
             <span className="font-semibold">🎫 Total Tickets Available:</span>{" "}
-            {event?.venue?.seats?.length}
+            164
+          </p>
+          <p className="text-gray-600 mt-1">
+            <span className="font-semibold">📅 Date:</span> 12/06/2024
           </p>
         </div>
       </div>
