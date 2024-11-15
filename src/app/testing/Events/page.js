@@ -1,14 +1,14 @@
 'use client';
 import { useState, useEffect } from 'react';
 import styles from "@/styles/Testing.module.css";
-import TicketList from "@/components/tickets/TicketList";
+import TicketList from "@/components/ticketsOld/TicketList";
 
 
 export default function EventTestingPage({ eventData }) {
     const[_id, setId] = useState(eventData?._id || '');
     const[organizerId, setOrgId] = useState(eventData?.organizerId || '');
     const[venueID, setVenueId] = useState(eventData?.venueId || '');
-
+    const[ticketPrice, setTicketPrice] = useState('');
     const [eventName, setEventName] = useState(eventData?.eventName || '');
     const [eventDate, setDate] = useState(eventData?.eventDate || ''); // havent used it yet
     const [tickets, setTickets] = useState(eventData?.tickets || []);
@@ -35,7 +35,7 @@ export default function EventTestingPage({ eventData }) {
 
   // Save the Event data to the server
   const postRequest = async () => {
-    const payload = { eventName: eventName, organizerId:organizerId, venue:venueID , tickets };
+    const payload = { eventName: eventName, organizerId:organizerId, venue:venueID , tickets, ticketPrice };
     const response = await fetch('/api/events/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -80,7 +80,7 @@ export default function EventTestingPage({ eventData }) {
       <h1>{eventData ? 'Edit Event' : 'Add New Event'}</h1>
       
       <div>
-      <label>Venue Name:  </label>
+      <label>Event Name:  </label>
       <input
         type="text"
         value={eventName}
@@ -103,6 +103,16 @@ export default function EventTestingPage({ eventData }) {
         onChange={(e) => setVenueId(e.target.value)}
         className={styles.input}
       />
+    </div>
+    <label>Ticket Price:  </label>
+      <input
+        type="number"
+        value={ticketPrice}
+        onChange={(e) => setTicketPrice(e.target.value)}
+        className={styles.input}
+      />
+    <div>
+      
     </div>
       <h2>Seats</h2>
         <TicketList tickets={tickets} updateTicket={updateTicket} removeTicket={removeTicket} styles={styles}/>
