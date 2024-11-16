@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+
 import Navbar from "@/components/Navbar";
 import concert from "../../public/concert.jpg";
 import Image from "next/image";

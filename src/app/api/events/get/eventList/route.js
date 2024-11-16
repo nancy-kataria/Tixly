@@ -12,7 +12,7 @@ export async function GET(request) {
                 select: 'name address',
             })
             .exec();
-        console.log(events)
+        //console.log(events);
         const eventList = events.map(event => ({
             _id: event._id,
             eventName: event.eventName,

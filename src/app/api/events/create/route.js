@@ -30,6 +30,7 @@ export async function POST(request) {
           eventID: newEvent._id,
           ticket: ticket._id,
         }));
+        
         await TicketOwnership.insertMany(ticketOwnerships);
       return new Response(JSON.stringify(newEvent), { status: 201 });
     } catch (error) {

@@ -7,7 +7,7 @@ export async function POST(request) {
   const { name, email, password, userType } = await request.json();
 
 
-  const newUser = new User({
+  const user = new User({
     name,
     email,
     password,
@@ -16,8 +16,8 @@ export async function POST(request) {
   
   try {
     console.log("hello");
-    await newUser.save();
-    return new Response(JSON.stringify({ message: 'User created successfully' }), { status: 201 });
+    await user.save();
+    return new Response(user, { status: 201 });
   } catch (error) {
     return new Response(JSON.stringify({ error: 'User already exists or invalid data' }), { status: 400 });
   }

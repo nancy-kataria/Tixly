@@ -1,7 +1,9 @@
 "use client";
 import { useState } from "react";
-import styles from "@/styles/Login.module.css";
 import Navbar from "@/components/Navbar";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+
 
 export default function LoginPage() {
   console.log("Log in page loaded");
@@ -10,6 +12,9 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState(""); // Only used for signup
   const [userType, setUserType] = useState("User"); // Only used for signup
+
+  const { setUser } = useAuth();
+  const router = useRouter();
 
   const handleSubmit = async (e) => {
     console.log("Login/Signup clicked)");
@@ -29,6 +34,8 @@ export default function LoginPage() {
     const data = await res.json();
     if (res.ok) {
       alert(isLogin ? "Login successful!" : "Signup successful!");
+      setUser(data);
+      router.push("/");
       // Optionally, redirect to the homepage or another page
     } else {
       alert(data.error || "An error occurred");
