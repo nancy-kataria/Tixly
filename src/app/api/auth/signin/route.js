@@ -1,5 +1,6 @@
 import connectDB from '@/lib/mongooseDB';
 import User from '@/models/Users';
+import { stringify } from 'postcss';
 
 export async function POST(request) {
     console.log("User Sign in Post request Called");
@@ -11,6 +12,7 @@ export async function POST(request) {
     return new Response(JSON.stringify({ error: 'Invalid email or password' }), { status: 401 });
   }
 
+  console.log(JSON.stringify(user));
   // Authentication successful
-  return new Response(JSON.stringify({ message: 'SignIn successful' }), { status: 200 });
+  return new Response(JSON.stringify(user), { status: 200 });
 }

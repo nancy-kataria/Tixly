@@ -5,14 +5,18 @@ import Image from "next/image";
 import concert from "../../../../public/concert.jpg";
 import Navbar from "@/components/Navbar";
 import { useEffect, useState } from "react";
+import TicketList from "@/components/tickets/TicketList";
 
 // pages/EventPage.js
 export default function EventPage({ params }) {
   const [event, setEvent] = useState({});
+  const[sortBy, setSortBy] = useState("status");
+  const [sortedTickets, setSortedTickets] = useState([]);
+
   const [promptInput, setPromptInput] = useState("");
   const [response, setResponse] = useState("");
   const [boxOpen, setBoxOpen] = useState(false);
-
+  const userID = "672fbdfa8f244694a34a5309";
   const getGenAIresponse = async () => {
     try {
       const res = await fetch("/api/genAI", {
@@ -42,6 +46,9 @@ export default function EventPage({ params }) {
         const data = await res.json();
         if (res.ok) {
           setEvent(data);
+          //sort ticket list
+          setSortedTickets([...data.tickets]);//.sort((a,b)=>a[sortBy].localCompare(b[sortBy])));
+
           if (data?.eventArtist) {
             setPromptInput(`Tell me something about ${data?.eventArtist}`);
           }
@@ -52,7 +59,7 @@ export default function EventPage({ params }) {
     };
 
     getRequest();
-  }, [params]);
+  }, [params, sortBy]);
 
   console.log(event);
   console.log(promptInput);
@@ -97,6 +104,12 @@ export default function EventPage({ params }) {
             {date?.toLocaleDateString("en-US")}
           </p>
         </div>
+
+    {event.tickets && Array.isArray(event.tickets) ? 
+        (<TicketList tickets={event.tickets} eventID={event._id} userID={userID} />) :
+        (<p>Loading Tickets</p>)
+        }
+
         <div className="text-center">
           {!boxOpen ? (
             <button

@@ -5,7 +5,7 @@ const {Schema, SchemaTypes, model} = mongoose;
 
 const ticketSchema = new Schema({
     _id: {type:SchemaTypes.ObjectId, auto: true},
-    seatNumber: Number,
+    seatNumber: {type: Number, required: true},
     price: {type:Number, default: 0},
     status: {type:String, default: "Available"} //Available, sold
 });
@@ -22,6 +22,7 @@ const eventSchema = new Schema (
         eventCategory: { 
             type: String, 
             enum: ["Music", "Sports", "Comedy", "Theater"], // Restrict to these values
+            default:"Music",
             required: true 
         },
         eventArtist: String,
