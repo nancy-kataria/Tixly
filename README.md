@@ -1,4 +1,12 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Event-Ticket-Booking-App
+
+### Built With
+
+* [![Next.js][Next.js]][Next.js-url]
+* [![JavaScript][JavaScript]][JavaScript-url]
+* [![MongoDB][MongoDB]][MongoDB-url]
+* [![Node.js][Node.js]][Node.js-url]
+* [![Tailwind CSS][Tailwind CSS]][Tailwind-url]
 
 ## Getting Started
 
@@ -34,3 +42,21 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+<!-- MARKDOWN LINKS & IMAGES -->
+<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
+[linkedin-url]: https://www.linkedin.com/in/nancy-kataria8/
+<!-- Badges (Icons) -->
+[JavaScript]: https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black]
+[MongoDB]: https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white
+[Next.js]: https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white
+[Node.js]: https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white
+[Tailwind CSS]: https://img.shields.io/badge/TailwindCSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white
+
+<!-- URLs -->
+[MongoDB-url]: https://www.mongodb.com/
+[Next.js-url]: https://nextjs.org/
+[Node.js-url]: https://nodejs.org/en
+[Tailwind-url]: https://tailwindcss.com/
+[JavaScript-url]: https://developer.mozilla.org/en-US/docs/Web/JavaScript
