@@ -26,7 +26,6 @@ export default function EventPage({ params }) {
       });
 
       const data = await res.json();
-      console.log(data);
       setResponse(data.choices[0].message.content);
     } catch (error) {
       console.error("Error:", error);
@@ -60,9 +59,6 @@ export default function EventPage({ params }) {
 
     getRequest();
   }, [params, sortBy]);
-
-  console.log(event);
-  console.log(promptInput);
 
   const date = new Date(event?.eventDate);
 

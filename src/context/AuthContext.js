@@ -8,14 +8,11 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null); // Null if not logged in
   useEffect(() => {
-    console.log("Auth context mounted");
     // Simulate fetching user session
     const fetchUser = async () => {
-      console.log("Fetch user called");
       const res = await fetch("/api/auth/session"); // Example API for user session
       if (res.ok) {
         const data = await res.json();
-        console.log(data);
         setUser(data);
       }
     };

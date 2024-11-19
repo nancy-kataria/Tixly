@@ -50,7 +50,6 @@ export default function EventTestingPage({ eventData }) {
 
   const getRequest = async(e) => {
     e.preventDefault();
-    console.log("Event get request");
     
     try {
         const url = `/api/events/get/eventID/${_id}`;

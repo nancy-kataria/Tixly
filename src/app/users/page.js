@@ -9,7 +9,6 @@ export default function Page() {
       const url = `/api/users/get`;
       const res = await fetch(url, { method: `GET` });
       const data = await res.json();
-      console.log(data)
       setOrganizers(data);
     };
 

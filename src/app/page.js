@@ -26,7 +26,6 @@ export default function HomePage() {
         const url = `/api/events/get/eventList`;
         const res = await fetch(url, { method: `GET` });
         const data = await res.json();
-        console.log(data);
         if (res.ok) {
           setResults(data);
         } else setResults([]);

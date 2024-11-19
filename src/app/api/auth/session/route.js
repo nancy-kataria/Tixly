@@ -1,8 +1,6 @@
 import { getServerSession } from "next-auth";
 
 export async function GET(req) {
-  console.log("Auth Session called");
-
   try {
     const session = await getServerSession(req);
 

@@ -20,18 +20,15 @@ export default function UserTestingPage() {
   // Function for GET request (Get user info by ID or email)
   const getRequest = async (e) => {
     e.preventDefault();
-    console.log("User GET request");
 
 
     const url = _id ? `/api/users/get/profile/id/${_id}` : `/api/users/get/profile/email/${email}`;
-    console.log(url);
     try {
       const res = await fetch(url, { method: 'GET' });
       const data = await res.json();
       if (res.ok) {
         alert("Data retrieved successfully!");
         setJsonData(data);
-        console.log(data);
       } else {
         alert(data.error || 'Error fetching data');
       }
@@ -44,7 +41,6 @@ export default function UserTestingPage() {
   // Function for POST request (Create new user)
   const postRequest = async (e) => {
     e.preventDefault();
-    console.log("User POST request");
 
     const payload = { name, email, password, phone:phoneNumber, address, userType};
     try {
@@ -56,7 +52,6 @@ export default function UserTestingPage() {
       const data = await res.json();
       if (res.ok) {
         alert("User created successfully!");
-        console.log(data);
       } else {
         alert(data.error || 'Error creating user');
       }
@@ -69,7 +64,6 @@ export default function UserTestingPage() {
   // Function for PUT request (Update existing user)
   const putRequest = async (e) => {
     e.preventDefault();
-    console.log("User PUT request");
 
     const payload = { name, email, password, userType };
     try {
@@ -81,7 +75,6 @@ export default function UserTestingPage() {
       const data = await res.json();
       if (res.ok) {
         alert("User updated successfully!");
-        console.log(data);
       } else {
         alert(data.error || 'Error updating user');
       }

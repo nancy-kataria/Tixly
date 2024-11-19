@@ -4,7 +4,6 @@ import Venue from '@/models/Venue';
 
 export async function GET(request, {params}) {
   try {
-    console.log("Venue ID Get request called");
 
     const { id } = await params;
 

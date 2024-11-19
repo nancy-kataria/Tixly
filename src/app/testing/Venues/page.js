@@ -49,7 +49,6 @@ const updateVenue = async(e)=>{
 }
   const getRequest = async(e) => {
     e.preventDefault();
-    console.log("Venue get request");
     
     try {
         const url = `/api/venues/get/fullVenue/${id}`;

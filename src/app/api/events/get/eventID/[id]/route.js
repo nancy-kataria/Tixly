@@ -6,7 +6,6 @@ import User from '@/models/Users';
 
 
 export async function GET(request, {params}) {
-    console.log("Event create Post request called");
     try {
         await connectDB();
 
@@ -17,7 +16,6 @@ export async function GET(request, {params}) {
 
       if (!event)
         return new Response(JSON.stringify({ error: "Event not found" }), { status: 404 });
-    console.log("Found Event");
       return new Response(JSON.stringify(event), { status: 201 });
     } catch (error) {
         console.log(error);

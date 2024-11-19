@@ -4,10 +4,8 @@ import TicketOwnership from '@/models/TicketOwnership';
 
 
 export async function PUT(request, {params}) {
-    console.log("Purchase Ticket PUT request called");
     const {id} = await params;
     const data = await request.json();
-
     try{
         
         await connectDB();
@@ -17,13 +15,11 @@ export async function PUT(request, {params}) {
         {
             return new Response(JSON.stringify({ error: "Ticket ownership not found" }), { status: 404 });
         }
-        console.log(JSON.stringify(updatedOwnership));
         const event = await Event.findOneAndUpdate({"tickets._id": id}, {$set:{"tickets.$.status": "Sold"}}, {new:true});
         if (!event)
         {
             return new Response(JSON.stringify({ error: "Event Ticket not found" }), { status: 404 });
         }
-        console.log(JSON.stringify(event));
 
         return new Response(JSON.stringify({ success: true, updatedOwnership, event }), { status: 200 });
     }

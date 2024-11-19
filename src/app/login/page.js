@@ -6,7 +6,6 @@ import { useAuth } from "@/context/AuthContext";
 
 
 export default function LoginPage() {
-  console.log("Log in page loaded");
   const [isLogin, setIsLogin] = useState(true); // Toggle between login and signup
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -17,7 +16,6 @@ export default function LoginPage() {
   const router = useRouter();
 
   const handleSubmit = async (e) => {
-    console.log("Login/Signup clicked)");
 
     e.preventDefault();
     const url = isLogin ? "/api/auth/signin" : "/api/auth/signup";
