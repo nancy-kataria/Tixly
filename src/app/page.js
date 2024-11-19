@@ -92,29 +92,6 @@ export default function HomePage() {
             </div>
           ))}
         </div>
-
-        <Link href="/event">
-          <div className="w-full max-w-lg p-4 bg-white border border-gray-300 rounded-lg shadow-md flex items-center space-x-4">
-            {/* Event Image */}
-            <Image
-              src={concert}
-              alt="concert-image"
-              className="w-24 h-24 rounded-lg object-cover"
-            />
-
-            {/* Event Details */}
-            <div>
-              {/* Event Name */}
-              <h2 className="text-2xl font-bold text-gray-800">Event Name</h2>
-
-              {/* Date and Venue */}
-              <div className="text-gray-600 mt-2">
-                <p className="text-sm font-medium">📅 Date: 01-01-2025</p>
-                <p className="text-sm font-medium">📍 Venue: New York</p>
-              </div>
-            </div>
-          </div>
-        </Link>
       </div>
     </>
   );
