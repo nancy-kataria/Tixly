@@ -1,36 +1,40 @@
 "use client";
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
-import { useAuth } from '@/context/AuthContext';
-
-
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/router";
 
 export default function CreateEvent() {
-    const [eventName, setEventName] = useState("");
-    const [venueID, setVenueId] = useState("");
-    const [ticketPrice, setTicketPrice] = useState("");
-    const {user} = useAuth();
+  const [eventName, setEventName] = useState("");
+  const [venueID, setVenueId] = useState("");
+  const [ticketPrice, setTicketPrice] = useState("");
+  const router = useRouter();
+  const { user } = useAuth();
 
-
-    const handleSubmit = async () => {
-        const payload = { eventName: eventName, organizerId:user._id, venue:venueID, ticketPrice };
-    const response = await fetch('/api/events/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+  const handleSubmit = async () => {
+    const payload = {
+      eventName: eventName,
+      organizerId: user._id,
+      venue: venueID,
+      ticketPrice,
+    };
+    const response = await fetch("/api/events/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
     });
     if (response.ok) {
-      alert('Event saved successfully!');
+      alert("Event saved successfully!");
     } else {
-      alert('Error saving Event');
+      alert("Error saving Event");
     }
   };
-    
-return (
-    <>
-    <Navbar />
 
-    <div className="max-w-lg mx-auto mt-10 bg-white p-8 rounded-lg shadow-md">
+  return (
+    <>
+      <Navbar router={router} />
+
+      <div className="max-w-lg mx-auto mt-10 bg-white p-8 rounded-lg shadow-md">
         <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">
           Add Event
         </h2>
@@ -52,9 +56,15 @@ return (
               placeholder="Enter event name"
             />
           </div>
-          
+
           <div>
-            <label className="block text-gray-700 font-medium mb-1" htmlFor="venueId"> Venue ID </label>
+            <label
+              className="block text-gray-700 font-medium mb-1"
+              htmlFor="venueId"
+            >
+              {" "}
+              Venue ID{" "}
+            </label>
             <input
               type="text"
               id="venueId"
@@ -66,7 +76,13 @@ return (
             />
           </div>
           <div>
-            <label className="block text-gray-700 font-medium mb-1" htmlFor="ticketPrice"> Ticket Price </label>
+            <label
+              className="block text-gray-700 font-medium mb-1"
+              htmlFor="ticketPrice"
+            >
+              {" "}
+              Ticket Price{" "}
+            </label>
             <input
               type="text"
               id="ticketPrice"
@@ -86,5 +102,5 @@ return (
         </form>
       </div>
     </>
-);
+  );
 }

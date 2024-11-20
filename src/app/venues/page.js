@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
+import { useRouter } from "next/router";
 
 export default function VenueTesting() {
   const [organizerId, setOrgId] = useState("");
@@ -12,6 +13,8 @@ export default function VenueTesting() {
   // const [eventDate, setDate] = useState(eventData?.eventDate || ""); // havent used it yet
   const [tickets, setTickets] = useState([]);
   const [jsonData, setJsonData] = useState(null);
+
+  const router = useRouter();
 
   // Add a new seat to the seats array
   const addTicket = () => {
@@ -96,7 +99,7 @@ export default function VenueTesting() {
 
   return (
     <>
-      <Navbar />
+      <Navbar router={router} />
       <div className="max-w-lg mx-auto mt-10 bg-white p-8 rounded-lg shadow-md">
         <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">
           Add a Venue

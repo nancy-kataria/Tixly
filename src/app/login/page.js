@@ -42,7 +42,7 @@ export default function LoginPage() {
 
   return (
     <>
-      <Navbar />
+      <Navbar router={router} />
       <div className="flex flex-col items-center justify-center min-h-screen p-8 bg-gray-100">
         <div className="w-full max-w-md p-6 space-y-6 bg-white rounded-lg shadow-md">
           <h1 className="text-2xl font-semibold text-center text-gray-700">
