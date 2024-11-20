@@ -39,7 +39,7 @@ export default function HomePage() {
 
   return (
     <>
-      <Navbar />
+      <Navbar router={router} />
       <div
         style={{ padding: "2rem", textAlign: "center" }}
         className="min-h-screen bg-gray-100"

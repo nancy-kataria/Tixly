@@ -19,8 +19,16 @@ export const AuthProvider = ({ children }) => {
     fetchUser();
   }, []);
 
+  const signOut = async () => {
+    try {
+      setUser(null)
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, setUser }}>
+    <AuthContext.Provider value={{ user, setUser, signOut }}>
       {children}
     </AuthContext.Provider>
   );
