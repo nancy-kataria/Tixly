@@ -1,5 +1,7 @@
 # Event-Ticket-Booking-App
 
+# Me and my two project team members are in the process of making an event ticket booking app as part of our school web backend project.
+
 ### Built With
 
 * [![Next.js][Next.js]][Next.js-url]
