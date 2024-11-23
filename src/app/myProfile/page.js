@@ -9,6 +9,8 @@ import { useAuth } from "@/context/AuthContext";
 // error when the pages router is not mounted, and instead has a
 // return type of NextRouter | null. This allows developers to
 // convert components to support running in both app and pages as they transition to the app router.
+
+// fix: route push issues using this compat router
 import { useRouter } from "next/compat/router";
 
 export default function MyProfile() {
