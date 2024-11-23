@@ -72,12 +72,13 @@ export default function EventPage({ params }) {
       <div className="flex flex-col items-center min-h-screen bg-gray-100 p-8">
         {/* Event Image */}
         <div className="w-full max-w-2xl">
-          <Image
+          
+       <Image
             src={concert}
             alt="concert-image"
             className="w-30 h-30 rounded-lg object-cover"
           />
-        </div>
+      </div>
 
         {/* Event Details */}
         <div className="w-full max-w-2xl bg-white mt-6 p-6 rounded-lg shadow-lg">

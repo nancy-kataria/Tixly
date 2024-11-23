@@ -17,7 +17,7 @@ export async function POST(request) {
   try {
     console.log("hello");
     await user.save();
-    return new Response(user, { status: 201 });
+    return new Response(JSON.stringify(user), { status: 201 });
   } catch (error) {
     return new Response(JSON.stringify({ error: 'User already exists or invalid data' }), { status: 400 });
   }

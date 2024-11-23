@@ -5,6 +5,7 @@ module.exports = {
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+
   theme: {
     extend: {
       colors: {
@@ -15,3 +16,9 @@ module.exports = {
   },
   plugins: [],
 };
+
+<Image
+  src={concert}
+  alt="concert-image"
+  className="w-full h-auto md:w-3/4 md:h-[400px]" // Adjust classes for size
+/>
