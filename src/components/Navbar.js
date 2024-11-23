@@ -49,15 +49,17 @@ export default function Navbar({ router }) {
         )}
 
         {user && (
-          <div className="relative w-10 h-10">
-            <Image
-              src={avatar}
-              alt="avatar"
-              className="rounded-full"
-              fill
-              objectFit="cover"
-            />
-          </div>
+          <Link href="/myProfile" passHref>
+            <div className="relative w-10 h-10">
+              <Image
+                src={avatar}
+                alt="avatar"
+                className="rounded-full"
+                fill
+                objectFit="cover"
+              />
+            </div>
+          </Link>
         )}
       </div>
     </nav>
