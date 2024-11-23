@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
     fetchUser();
   }, []);
 
-  const signOut = async () => {
+  const signOut = () => {
     try {
       setUser(null)
     } catch (error) {
