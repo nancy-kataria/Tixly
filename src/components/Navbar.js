@@ -43,13 +43,21 @@ export default function Navbar({ router }) {
             Sign Out
           </div>
         ) : (
-          <Link href="/login" passHref>
+          <Link href="login" passHref>
             <div className="cursor-pointer hover:underline">Sign In</div>
           </Link>
         )}
 
         {user && (
-          <Link href="/myProfile" passHref>
+          <Link
+            href={{
+              pathname: "/myProfile",
+              query: {
+                userId: user._id,
+              },
+            }}
+            passHref
+          >
             <div className="relative w-10 h-10">
               <Image
                 src={avatar}
