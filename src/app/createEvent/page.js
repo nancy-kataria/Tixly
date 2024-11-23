@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/context/AuthContext";
-import { useRouter } from "next/router";
+import { useRouter } from "next/compat/router";
 
 export default function CreateEvent() {
   const [eventName, setEventName] = useState("");

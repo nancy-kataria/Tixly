@@ -6,7 +6,7 @@ import concert from "../../../../public/concert.jpg";
 import Navbar from "@/components/Navbar";
 import { useEffect, useState } from "react";
 import TicketList from "@/components/tickets/TicketList";
-import { useRouter } from "next/router";
+import { useRouter } from "next/compat/router";
 
 // pages/EventPage.js
 export default function EventPage({ params }) {
