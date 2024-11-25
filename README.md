@@ -1,4 +1,6 @@
-# Event-Ticket-Booking-App
+# Tixly
+
+## Event Ticket Booking App
 
 Me and my two project team members are in the process of making an event ticket booking app as part of our school web backend project.
 
