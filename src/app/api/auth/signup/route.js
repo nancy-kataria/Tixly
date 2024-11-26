@@ -1,7 +1,7 @@
 import connectDB from '@/lib/mongooseDB';
 import User from '@/models/Users';
 
-export async function POST(request) {
+export async function POST(req, res) {
   await connectDB();
   const { name, email, password, userType } = await request.json();
 
@@ -15,7 +15,8 @@ export async function POST(request) {
   
   try {
     await user.save();
-    return new Response(user, { status: 201 });
+    await createUserCookie(user, res);
+    return new Response(JSON.stringify(user), { status: 201 });
   } catch (error) {
     return new Response(JSON.stringify({ error: 'User already exists or invalid data' }), { status: 400 });
   }

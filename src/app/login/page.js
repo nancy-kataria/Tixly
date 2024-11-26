@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { useUser } from "@/context/UserContext";
+//import { signIn } from "next-auth/react";
 
 
 export default function LoginPage() {
@@ -11,17 +12,21 @@ export default function LoginPage() {
   const [name, setName] = useState(""); // Only used for signup
   const [userType, setUserType] = useState("User"); // Only used for signup
 
+  const {refreshUser} = useUser();
+
   //const { setUser } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e) => {
 
     e.preventDefault();
-    const url = isLogin ? "/api/auth/signin" : "/api/auth/signup";
+    const url = isLogin ? "/api/auth/signIn" : "/api/auth/signUp";
     const body = isLogin
       ? { email, password }
       : { name, email, password, userType };
 
+      //For next-auth
+      /*
     if (!isLogin){
         const res = await fetch("/api/auth/signup", {
           method: "POST",
@@ -39,14 +44,30 @@ export default function LoginPage() {
       email, 
       password
     });
+    */
 
-    if (result.error){
-      alert(result.error);
+//for cookie
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) return;
+  const data = await res.json();
+
+    if (res.error){
+      alert(res.error);
     }
     else
     {
       alert("Logged in");
+      await refreshUser();
+      console.log(res);
+      router.push("/");
     }
+
+
     /*
     const data = await res.json();
     if (res.ok) {
@@ -62,7 +83,7 @@ export default function LoginPage() {
 
   return (
     <>
-      <div className="container">
+      <div className="flex flex-col items-center justify-center min-h-screen p-8 bg-gray-100">
         <div className="w-full max-w-md p-6 space-y-6 bg-white rounded-lg shadow-md">
           <h1 className="text-2xl font-semibold text-center text-gray-700">
             {isLogin ? "Sign In" : "Sign Up"}

@@ -3,6 +3,7 @@ import Navbar from "@/components/Navbar";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
+
 export default function Page() {
   const [organizers, setOrganizers] = useState([]);
   const router = useRouter();
