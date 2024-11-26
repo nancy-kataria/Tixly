@@ -1,22 +1,25 @@
 import connectDB from '@/lib/mongooseDB';
 import createUserCookie from '@/lib/setCookie';
 import User from '@/models/Users';
+import bcrypt from "bcrypt";
 
-export async function POST(req, res) {
+
+export async function POST(req) {
   try{
     await connectDB();
-    res = new Response();
     const { email, password } = await req.json();
   
     const user = await User.findOne({ email });
-    if (!user || (password != user.password)) {
+    const sameDeCryptPassword = await bcrypt.compare(password, user.password);
+    const samepassword = password == user.password;
+    if (!user || !(samepassword || sameDeCryptPassword)) {
       return new Response(JSON.stringify({ error: 'Invalid email or password' }), { status: 401 });
     }
-    const {token, headers} = await createUserCookie(user, res);
+
+    const {token, headers} = await createUserCookie(user);
 
     // Authentication successful
     var res = new Response(JSON.stringify(user), { status: 200 , headers});
-    console.log(JSON.stringify(res));
     return res;
 
   }catch(e){
