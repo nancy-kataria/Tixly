@@ -21,30 +21,34 @@ export default function TicketList({ tickets, eventID, userID }) {
     }
   }, [sortBy, tickets]);
 
-  const purchaseTicket = async (ticketId) => {
-    try {
-      const res = await fetch(`/api/tickets/purchase/${ticketId}`, {
+  const handleTicketAction = async(ticketId, action) => {
+    try{
+      if(!userID || userID === "") return;
+      console.log("Ticket Action called");
+
+      const res = await fetch(`/api/tickets/update/${ticketId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userID, eventID }),
+        body: JSON.stringify({ eventID, userID , action }), // No need to send `userID`
       });
 
-      if (res.ok) {
+      if(res.ok){
         setSortedTickets((prevTickets) =>
           prevTickets.map((ticket) =>
-            ticket._id === ticketId ? { ...ticket, status: "Sold" } : ticket
-          )
-        );
-      } 
-      else {
-        const errorData = await res.json();
-        console.error("Error purchasing ticket:", errorData.error);
-      }
-    } catch (error) {
-      console.error("Error purchasing ticket:", error);
+            ticket._id === ticketId ? {
+                ...ticket,
+                  status: action === "buy" ? "Sold" : "Available",
+                }
+              : ticket
+          ))
+        }
+          else{
+            setSortedTickets(updatedTickets);
+          }
+    }catch(e){
+      console.log(e);
     }
-  };
-
+  }
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
@@ -72,15 +76,43 @@ export default function TicketList({ tickets, eventID, userID }) {
             <span className="text-lg font-semibold">Seat {ticket.seatNumber}</span>
             
             <span className="mt-2">${ticket.price}</span>
-            <button
-              disabled={ticket.status !== "Available"}
-              onClick={() => purchaseTicket(ticket._id)}
-              className={`mt-4 px-4 py-2 rounded text-white ${
-                ticket.status === "Available" ? "bg-green-500" : "bg-gray-500"
-              }`}
-            >
-              {ticket.status === "Available" ? "Buy" : "Sold"}
-            </button>
+
+            {/*If The ticket is available and the User doesnt own it "buy" */}
+            {ticket.status === "Available" && !ticket.isOwnedByUser && (
+              <button
+                onClick={() => handleTicketAction(ticket._id, "purchase")}
+                className="mt-4 px-4 py-2 rounded text-white bg-green-500"
+              >
+                Buy
+              </button>
+            )}
+            {/*If The ticket is not available and the User owns it "sell" */}
+            {ticket.status !== "Available" && ticket.isOwnedByUser && (
+              <button
+                onClick={() => handleTicketAction(ticket._id, "sell")}
+                className="mt-4 px-4 py-2 rounded text-white bg-yellow-500"
+              >
+                Sell
+              </button>
+            )}
+            {/*If The ticket is available and the User owns it "cancel sell" */}
+            {ticket.status === "Available" && ticket.isOwnedByUser && (
+              <button
+                onClick={() => handleTicketAction(ticket._id, "cancel")}
+                className="mt-4 px-4 py-2 rounded text-white bg-red-500"
+              >
+                Cancel
+              </button>
+            )}
+            {/*If The ticket is not available and the User doesnt own it "Unavailable" */}
+            {ticket.status !== "Available" && !ticket.isOwnedByUser && (
+              <button
+                disabled
+                className="mt-4 px-4 py-2 rounded text-white bg-gray-500 cursor-not-allowed"
+              >
+                Unavailable
+              </button>
+            )}
           </div>
         ))}
       </div>

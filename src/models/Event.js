@@ -7,7 +7,7 @@ const ticketSchema = new Schema({
     _id: {type:SchemaTypes.ObjectId, auto: true},
     seatNumber: {type: Number, required: true},
     price: {type:Number, default: 0},
-    status: {type:String, default: "Available"} //Available, sold
+    status: {type:String, default: "Available"} //Available, Sold
 });
 
 

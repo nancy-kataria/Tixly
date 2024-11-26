@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState, useCallback } from "rea
 const UserContext = createContext(null);
 export function UserProvider({children}){
     const [user, setUser] = useState(null);
+    const [isLoading, setIsLoading]= useState(true);
 
     const fetchUser = useCallback(async () => {
         try {
@@ -18,13 +19,16 @@ export function UserProvider({children}){
           console.error("Failed to fetch user:", error);
           setUser(null);
         }
+        finally{
+          setIsLoading(false);
+        }
       }, []);
 
         useEffect(() => {
             fetchUser();
           }, [fetchUser]);
 
-    return (<UserContext.Provider value={{ user, refreshUser: fetchUser }}>{children}</UserContext.Provider>);
+    return (<UserContext.Provider value={{ user, refreshUser: fetchUser, isLoading }}>{children}</UserContext.Provider>);
 }
 
 export function useUser(){

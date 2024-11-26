@@ -6,9 +6,12 @@ import concert from "../../../../public/concert.jpg";
 import { useEffect, useState } from "react";
 import TicketList from "@/components/tickets/TicketList";
 import { useRouter } from "next/compat/router";
+import { useUser } from "@/context/UserContext";
 
 // pages/EventPage.js
 export default function EventPage({ params }) {
+  const {user, isLoading: isUserLoading} = useUser();
+
   const [event, setEvent] = useState({});
   const[sortBy, setSortBy] = useState("status");
   const [sortedTickets, setSortedTickets] = useState([]);
@@ -17,8 +20,8 @@ export default function EventPage({ params }) {
   const [promptInput, setPromptInput] = useState("");
   const [response, setResponse] = useState("");
   const [boxOpen, setBoxOpen] = useState(false);
-  const userID = "672fbdfa8f244694a34a5309";
 
+  
   const getGenAIresponse = async () => {
     try {
       const res = await fetch("/api/genAI", {
@@ -38,12 +41,17 @@ export default function EventPage({ params }) {
   };
 
   useEffect(() => {
+    //wait for the user context
+    if(isUserLoading) return;
+
     const getRequest = async () => {
       const eventId = (await params).id;
 
       try {
-        const url = `/api/events/get/eventID/${eventId}`;
-        const res = await fetch(url, { method: `GET` });
+        var url = `/api/events/get/eventID/${eventId}`;
+        if(user && user.id)
+          url += `?userID=${user.id}`
+        const res = await fetch(url, { method: `GET`});
         const data = await res.json();
         if (res.ok) {
           setEvent(data);
@@ -57,13 +65,15 @@ export default function EventPage({ params }) {
       } catch (e) {
         console.error(e);
       }
+
+
     };
 
     getRequest();
-  }, [params, sortBy]);
+  }, [params, sortBy, user, isUserLoading]);
 
+  
   const date = new Date(event?.eventDate);
-
   return (
     <>
       <div className="flex flex-col items-center min-h-screen bg-gray-100 p-8">
@@ -103,7 +113,7 @@ export default function EventPage({ params }) {
         </div>
 
     {event.tickets && Array.isArray(event.tickets) ? 
-        (<TicketList tickets={event.tickets} eventID={event._id} userID={userID} />) :
+        (<TicketList tickets={event.tickets} eventID={event._id} userID={user?.id} />) :
         (<p>Loading Tickets</p>)
         }
 
