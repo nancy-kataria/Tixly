@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import Navbar from "@/components/Navbar";
 import concert from "../../public/concert.jpg";
 import Image from "next/image";
 import Link from "next/link";
@@ -39,7 +38,6 @@ export default function HomePage() {
 
   return (
     <>
-      <Navbar router={router} />
       <div
         style={{ padding: "2rem", textAlign: "center" }}
         className="min-h-screen bg-gray-100"

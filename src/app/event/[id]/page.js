@@ -3,7 +3,6 @@
 
 import Image from "next/image";
 import concert from "../../../../public/concert.jpg";
-import Navbar from "@/components/Navbar";
 import { useEffect, useState } from "react";
 import TicketList from "@/components/tickets/TicketList";
 import { useRouter } from "next/compat/router";
@@ -67,7 +66,6 @@ export default function EventPage({ params }) {
 
   return (
     <>
-      <Navbar router={router} />
       <div className="flex flex-col items-center min-h-screen bg-gray-100 p-8">
         {/* Event Image */}
         <div className="w-full max-w-2xl">

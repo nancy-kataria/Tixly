@@ -1,14 +1,18 @@
+"use client"
+import { useSession, signIn, signOut } from "next-auth/react";
+
 import Link from "next/link";
-import { useAuth } from "@/context/AuthContext";
+//import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
 import avatar from "../../public/avatar.png";
 
 export default function Navbar({ router }) {
-  const { user } = useAuth();
-  const { signOut } = useAuth();
+  //const { user } = useAuth();
+  //const { signOut } = useAuth();
+  const {data: session, status} = useSession();
 
   const handleSignOut = () => {
-    signOut();
+    //signOut();
     router.push("/");
   };
 
@@ -25,8 +29,8 @@ export default function Navbar({ router }) {
           <div className="cursor-pointer hover:underline">Explore</div>
         </Link>
 
-        {user ? (
-          user.userType === "Organizer" && (
+        {session ? (
+          session.user.userType === "Organizer" && (
             <Link href="/createEvent" passHref>
               <div className="cursor-pointer hover:underline">Create Event</div>
             </Link>
@@ -35,7 +39,7 @@ export default function Navbar({ router }) {
           <></>
         )}
 
-        {user ? (
+        {session ? (
           <div
             className="cursor-pointer hover:underline"
             onClick={handleSignOut}
@@ -48,12 +52,12 @@ export default function Navbar({ router }) {
           </Link>
         )}
 
-        {user && (
+        {session && (
           <Link
             href={{
               pathname: "/myProfile",
               query: {
-                userId: user._id,
+                userId: session.user.id,
               },
             }}
             passHref

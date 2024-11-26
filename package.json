@@ -2,7 +2,6 @@
   "name": "event-ticket-booking-app",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -11,11 +10,12 @@
   },
   "dependencies": {
     "autoprefixer": "^10.4.20",
+    "bcrypt": "^5.1.1",
     "mongoose": "^8.8.0",
-    "next": "15.0.2",
+    "next": "^15.0.2",
     "next-auth": "^4.24.10",
-    "react": "^19.0.0-rc-02c0e824-20241028",
-    "react-dom": "19.0.0-rc-02c0e824-20241028"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "eslint": "^8",

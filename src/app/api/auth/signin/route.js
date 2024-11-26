@@ -1,6 +1,5 @@
 import connectDB from '@/lib/mongooseDB';
 import User from '@/models/Users';
-import { stringify } from 'postcss';
 
 export async function POST(request) {
   await connectDB();

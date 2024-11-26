@@ -1,8 +1,7 @@
 "use client";
 import { useState } from "react";
-import Navbar from "@/components/Navbar";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
+import { signIn } from "next-auth/react";
 
 
 export default function LoginPage() {
@@ -12,7 +11,7 @@ export default function LoginPage() {
   const [name, setName] = useState(""); // Only used for signup
   const [userType, setUserType] = useState("User"); // Only used for signup
 
-  const { setUser } = useAuth();
+  //const { setUser } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e) => {
@@ -23,27 +22,47 @@ export default function LoginPage() {
       ? { email, password }
       : { name, email, password, userType };
 
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+    if (!isLogin){
+        const res = await fetch("/api/auth/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+
+        if (!res.ok) return;
+        const data = await res.json();
+
+    }  
+    
+    const result = await signIn("credentials", {
+      redirect:false,
+      email, 
+      password
     });
 
+    if (result.error){
+      alert(result.error);
+    }
+    else
+    {
+      alert("Logged in");
+    }
+    /*
     const data = await res.json();
     if (res.ok) {
       alert(isLogin ? "Login successful!" : "Signup successful!");
-      setUser(data);
+      //setUser(data);
       router.push("/");
       // Optionally, redirect to the homepage or another page
     } else {
       alert(data.error || "An error occurred");
     }
+      */
   };
 
   return (
     <>
-      <Navbar router={router} />
-      <div className="flex flex-col items-center justify-center min-h-screen p-8 bg-gray-100">
+      <div className="container">
         <div className="w-full max-w-md p-6 space-y-6 bg-white rounded-lg shadow-md">
           <h1 className="text-2xl font-semibold text-center text-gray-700">
             {isLogin ? "Sign In" : "Sign Up"}

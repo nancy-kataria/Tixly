@@ -1,7 +1,7 @@
 "use client";
 
-import Navbar from "@/components/Navbar";
-import { useAuth } from "@/context/AuthContext";
+import { useSession } from "next-auth/react";
+
 import { useEffect, useState } from "react";
 import concert from "../../../public/concert.jpg";
 // import { useRouter } from "next/router";
@@ -17,7 +17,8 @@ import Image from "next/image";
 
 export default function MyProfile() {
   const router = useRouter();
-  const { user } = useAuth();
+  const {data: session, status} = useSession();
+
   const [eventList, setEventList] = useState([]);
   const searchParams = useSearchParams();
 
@@ -26,6 +27,8 @@ export default function MyProfile() {
       return;
     }
     const id = searchParams.get("userId");
+    const id2 = session.user.id;
+    console.log(`${id}  ,   ${id2}`)
     const getEventsOwnedbyOrganizer = async () => {
       try {
         const response = await fetch(`/api/events/get/organizerID/${id}`, {
@@ -45,7 +48,6 @@ export default function MyProfile() {
   console.log(eventList);
   return (
     <div className="min-h-screen bg-gray-100">
-      <Navbar router={router} />
       <div className="text-gray-800">
         <h3 className="text-2xl font-bold">{user.userType}</h3>
         <p className="text-lg font-medium">{user.name}</p>
