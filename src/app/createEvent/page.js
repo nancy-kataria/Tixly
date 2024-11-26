@@ -5,18 +5,21 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/compat/router";
 
 export default function CreateEvent() {
-  const [eventName, setEventName] = useState("");
-  const [venueID, setVenueId] = useState("");
-  const [ticketPrice, setTicketPrice] = useState("");
+  const [formData, setFormData] = useState({
+    eventName: "",
+    venue: "",
+    ticketPrice: "",
+    eventDate: "",
+    eventArtist: "",
+    eventCategory: "",
+  });
   const router = useRouter();
   const { user } = useAuth();
 
   const handleSubmit = async () => {
     const payload = {
-      eventName: eventName,
+      ...formData,
       organizerId: user._id,
-      venue: venueID,
-      ticketPrice,
     };
     const response = await fetch("/api/events/create", {
       method: "POST",
@@ -28,6 +31,14 @@ export default function CreateEvent() {
     } else {
       alert("Error saving Event");
     }
+  };
+
+  const handleFormDataChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
   };
 
   return (
@@ -49,13 +60,86 @@ export default function CreateEvent() {
             <input
               type="text"
               id="eventName"
-              value={eventName}
-              onChange={(e) => setEventName(e.target.value)}
+              name="eventName"
+              value={formData.eventName}
+              onChange={handleFormDataChange}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-400"
               placeholder="Enter event name"
             />
           </div>
+
+          <div>
+            <label
+              className="block text-gray-700 font-medium mb-1"
+              htmlFor="eventArtist"
+            >
+              Artist Name
+            </label>
+            <input
+              type="text"
+              id="eventArtist"
+              name="eventArtist"
+              value={formData.eventArtist}
+              onChange={handleFormDataChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-400"
+              placeholder="Enter Artist Name"
+            />
+          </div>
+
+          <p className="text-gray-700">Choose a Category for your event:</p>
+          <div className="flex flex-col space-y-2">
+            <label className="flex items-center text-gray-700">
+              <input
+                type="radio"
+                name="eventCategory"
+                value="Music"
+                checked={formData.eventCategory === "Music"}
+                onChange={handleFormDataChange}
+                className="mr-2"
+              />
+              Music
+            </label>
+            <label className="flex items-center text-gray-700">
+              <input
+                type="radio"
+                name="eventCategory"
+                value="Sports"
+                checked={formData.eventCategory === "Sports"}
+                onChange={handleFormDataChange}
+                className="mr-2"
+              />
+              Sports
+            </label>
+            <label className="flex items-center text-gray-700">
+              <input
+                type="radio"
+                name="eventCategory"
+                value="Comedy"
+                checked={formData.eventCategory === "Comedy"}
+                onChange={handleFormDataChange}
+                className="mr-2"
+              />
+              Comedy
+            </label>
+            <label className="flex items-center text-gray-700">
+              <input
+                type="radio"
+                name="eventCategory"
+                value="Theater"
+                checked={formData.eventCategory === "Theater"}
+                onChange={handleFormDataChange}
+                className="mr-2"
+              />
+              Theater
+            </label>
+          </div>
+          {formData.eventCategory && (
+            <p className="mt-4 text-green-600">
+              You selected: {formData.eventCategory}
+            </p>
+          )}
 
           <div>
             <label
@@ -68,8 +152,9 @@ export default function CreateEvent() {
             <input
               type="text"
               id="venueId"
-              value={venueID}
-              onChange={(e) => setVenueId(e.target.value)}
+              name="venue"
+              value={formData.venue}
+              onChange={handleFormDataChange}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-400"
               placeholder="Enter venue ID"
@@ -86,12 +171,35 @@ export default function CreateEvent() {
             <input
               type="text"
               id="ticketPrice"
-              value={ticketPrice}
-              onChange={(e) => setTicketPrice(e.target.value)}
+              name="ticketPrice"
+              value={formData.ticketPrice}
+              onChange={handleFormDataChange}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-400"
               placeholder="Enter Ticket Price"
             />
+          </div>
+          <div>
+            <label
+              htmlFor="date-input"
+              className="block text-gray-700 font-medium mb-1"
+            >
+              Select a Date:
+            </label>
+            <input
+              id="date-input"
+              type="date"
+              name="eventDate"
+              value={formData.eventDate}
+              onChange={handleFormDataChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-400"
+            />
+            {formData.eventDate && (
+              <p className="mt-2 text-sm text-gray-600">
+                You selected:{" "}
+                <span className="font-medium">{formData.eventDate}</span>
+              </p>
+            )}
           </div>
           <button
             type="submit"
