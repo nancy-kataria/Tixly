@@ -2,7 +2,7 @@
 
 ## Event Ticket Booking App
 
-Me and my two project team members are in the process of making an event ticket booking app as part of our school web backend project.
+**Tixly** is an event ticket booking app designed to simplify the process of attending live concerts and games. Users can easily browse events, purchase tickets, and even resell their tickets by putting them on sale. Event organizers can create and manage events to sell tickets seamlessly through the platform, ensuring an all-in-one solution for both buyers and sellers.
 
 ### Built With
 
