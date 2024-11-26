@@ -1,11 +1,12 @@
 import connectDB from "@/lib/mongooseDB";
 import TicketOwnership from "@/models/TicketOwnership";
+import User from "@/models/Users";
 
 export async function PATCH(request, { params }) {
   const { id } = await params;
   const data = await request.json();
 
-  if (!data.userId) {
+  if (!data.userEmail) {
     return new Response(
       JSON.stringify({ error: "ID and userId are required" }),
       { status: 400 }
@@ -13,10 +14,13 @@ export async function PATCH(request, { params }) {
   }
   try {
     await connectDB();
+    const transferUserId = await User.findOne({email: data.userEmail})
+    console.log(transferUserId._id.toString())
+
     // Find the ownership record and update the userID
     const updatedRecord = await TicketOwnership.findByIdAndUpdate(
       id,
-      { userID: data.userId }, // Update the userID field
+      { userID: transferUserId._id.toString() }, // Update the userID field
       { new: true, runValidators: true } // Return the updated document
     );
 
