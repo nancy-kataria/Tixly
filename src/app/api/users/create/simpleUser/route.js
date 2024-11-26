@@ -3,7 +3,6 @@ import connectDB from '@/lib/mongooseDB';
 import User from '@/models/Users';
 
 export async function POST(request) {
-    console.log("User Sign Up Post Request Called");
   await connectDB();
   const data = await request.json();
  // const { name, email, password, userType } = await request.json();
@@ -13,7 +12,6 @@ export async function POST(request) {
   const newUser = new User(data);
   
   try {
-    console.log("hello");
     await newUser.save();
     return new Response(JSON.stringify({ message: 'User created successfully' }), { status: 201 });
   } catch (error) {

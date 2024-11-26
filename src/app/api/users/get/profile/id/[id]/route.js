@@ -4,7 +4,6 @@ import User from '@/models/Users';
 
 export async function GET(request, {params}) {
   try {
-    console.log("User ID Get request called");
 
     const { id } = await params;
 

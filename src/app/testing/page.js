@@ -10,7 +10,7 @@ export default function TestingPage() {
 
   return (
     <>
-      <Navbar />
+      <Navbar router={router} />
       <div className={styles["form-container"]}>
         <h1 style={{ fontSize: 40 }}>Testing Page</h1>
         <button

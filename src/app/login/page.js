@@ -6,7 +6,6 @@ import { useAuth } from "@/context/AuthContext";
 
 
 export default function LoginPage() {
-  console.log("Log in page loaded");
   const [isLogin, setIsLogin] = useState(true); // Toggle between login and signup
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -17,7 +16,6 @@ export default function LoginPage() {
   const router = useRouter();
 
   const handleSubmit = async (e) => {
-    console.log("Login/Signup clicked)");
 
     e.preventDefault();
     const url = isLogin ? "/api/auth/signin" : "/api/auth/signup";
@@ -44,7 +42,7 @@ export default function LoginPage() {
 
   return (
     <>
-      <Navbar />
+      <Navbar router={router} />
       <div className="flex flex-col items-center justify-center min-h-screen p-8 bg-gray-100">
         <div className="w-full max-w-md p-6 space-y-6 bg-white rounded-lg shadow-md">
           <h1 className="text-2xl font-semibold text-center text-gray-700">

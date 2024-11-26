@@ -6,17 +6,20 @@ import concert from "../../../../public/concert.jpg";
 import Navbar from "@/components/Navbar";
 import { useEffect, useState } from "react";
 import TicketList from "@/components/tickets/TicketList";
+import { useRouter } from "next/compat/router";
 
 // pages/EventPage.js
 export default function EventPage({ params }) {
   const [event, setEvent] = useState({});
   const[sortBy, setSortBy] = useState("status");
   const [sortedTickets, setSortedTickets] = useState([]);
+  const router = useRouter();
 
   const [promptInput, setPromptInput] = useState("");
   const [response, setResponse] = useState("");
   const [boxOpen, setBoxOpen] = useState(false);
   const userID = "672fbdfa8f244694a34a5309";
+
   const getGenAIresponse = async () => {
     try {
       const res = await fetch("/api/genAI", {
@@ -26,7 +29,6 @@ export default function EventPage({ params }) {
       });
 
       const data = await res.json();
-      console.log(data);
       setResponse(data.choices[0].message.content);
     } catch (error) {
       console.error("Error:", error);
@@ -61,14 +63,11 @@ export default function EventPage({ params }) {
     getRequest();
   }, [params, sortBy]);
 
-  console.log(event);
-  console.log(promptInput);
-
   const date = new Date(event?.eventDate);
 
   return (
     <>
-      <Navbar />
+      <Navbar router={router} />
       <div className="flex flex-col items-center min-h-screen bg-gray-100 p-8">
         {/* Event Image */}
         <div className="w-full max-w-2xl">

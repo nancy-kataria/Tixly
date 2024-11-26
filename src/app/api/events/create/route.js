@@ -4,7 +4,6 @@ import Venue from '@/models/Venue';
 import TicketOwnership from '@/models/TicketOwnership';
 
 export async function POST(request) {
-    console.log("Event create Post request called");
     const data = await request.json();
     try {
         await connectDB();
@@ -17,7 +16,6 @@ export async function POST(request) {
         {
           return new Response(JSON.stringify({ error: "Venue has no seats" }), { status: 400 });
         }
-        console.log(JSON.stringify(data));
         const tickets = Array.from({length: venue.totalSeats}, (_, i) => ({
 
           seatNumber: i+1,

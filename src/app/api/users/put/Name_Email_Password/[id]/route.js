@@ -4,7 +4,6 @@ import User from '@/models/Users';
 
 export async function PUT(request, {params}) {
   try {
-    console.log("User Email PUT request called");
 
     const { id } = await params;
     const payload = await request.json();
