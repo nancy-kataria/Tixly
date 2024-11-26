@@ -9,8 +9,8 @@ export default async function createUserCookie(user)
         console.log("Creating cookie");
         const secret = new TextEncoder().encode(process.env.JWT_SECRET);
 
-        const token = await new SignJWT({email: user.email, id: user._id, userType: user.userType})
-        
+        const token = await new SignJWT({email: user.email, id: user._id, userType: user.userType, name: user.name})
+
         .setProtectedHeader({alg:"HS256"})
         .setIssuedAt()
         .setExpirationTime("48h")

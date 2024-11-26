@@ -1,12 +1,13 @@
 "use client";
-import Navbar from "@/components/Navbar";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import { useUser } from "@/context/UserContext";
 
 
 export default function Page() {
   const [organizers, setOrganizers] = useState([]);
   const router = useRouter();
+  const {user} = useUser();
 
   useEffect(() => {
     const fetchOrganizers = async () => {
