@@ -3,23 +3,22 @@
 
 import  { useState, useEffect } from "react";
 
-export default function TicketList({ tickets, eventID, userID }) {
+export default function TicketList({ ticketList, userID }) {
   const [sortBy, setSortBy] = useState("status");
-  const [sortedTickets, setSortedTickets] = useState([...tickets]);
+  const [sortedticketList, setSortedticketList] = useState([...ticketList]);
 
+  
   useEffect(() => {
-    if(tickets && Array.isArray(tickets))
-    {
-    // Sort tickets whenever sortBy changes
-    setSortedTickets((prevTickets) =>
-      [...prevTickets].sort((a, b) => {
+    if (ticketList && Array.isArray(ticketList)) {
+      const sortedList = [...ticketList].sort((a, b) => {
         if (sortBy === "seatNumber") {
           return a.seatNumber - b.seatNumber;
         }
-        return a[sortBy].localeCompare(b[sortBy]);
-    }));
+        return a[sortBy]?.localeCompare(b[sortBy]);
+      });
+      setSortedticketList(sortedList);
     }
-  }, [sortBy, tickets]);
+  }, [ticketList, sortBy]);
 
   const handleTicketAction = async(ticketId, action) => {
     try{
@@ -29,30 +28,37 @@ export default function TicketList({ tickets, eventID, userID }) {
       const res = await fetch(`/api/tickets/update/${ticketId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ eventID, userID , action }), // No need to send `userID`
+        body: JSON.stringify({ userID , action }),
       });
 
       if(res.ok){
-        setSortedTickets((prevTickets) =>
-          prevTickets.map((ticket) =>
+        setSortedticketList((prevticketList) =>
+          prevticketList.map((ticket) =>
             ticket._id === ticketId ? {
                 ...ticket,
-                  status: action === "buy" ? "Sold" : "Available",
+                  status: action === "purchase" ? "Sold" : "Available",
                 }
               : ticket
           ))
         }
           else{
-            setSortedTickets(updatedTickets);
+            setSortedticketList(updatedticketList);
           }
     }catch(e){
       console.log(e);
     }
   }
+
+  if (!ticketList || ticketList.length === 0)
+    {
+        console.log("TicketList is empty");
+        return <p className="text-sm font-medium">No Tickets yet</p>;
+    }
+
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-gray-600 mt-1">Tickets</h2>
+        <h2 className="text-gray-600 mt-1">ticketList</h2>
         <div>
           <label htmlFor="sort" className="text-gray-600 mt-1">Sort By:</label>
           <select
@@ -68,7 +74,7 @@ export default function TicketList({ tickets, eventID, userID }) {
       </div>
 
       <div className="grid grid-cols-3 gap-4">
-        {sortedTickets.map((ticket) => (
+        {sortedticketList.map((ticket) => (
           <div
             key={ticket._id}
             className="text-gray-600 mt-1 rounded shadow-md flex flex-col items-center"

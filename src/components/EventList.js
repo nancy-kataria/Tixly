@@ -12,6 +12,7 @@ export default function EventList({eventList})
         console.log("Eventlist is empty");
         return <p className="text-sm font-medium">No events yet</p>;
     }
+    
     return (
         <>
         {/* Display search results */}

@@ -113,7 +113,7 @@ export default function EventPage({ params }) {
         </div>
 
     {event.tickets && Array.isArray(event.tickets) ? 
-        (<TicketList tickets={event.tickets} eventID={event._id} userID={user?.id} />) :
+        (<TicketList ticketList={event.tickets} userID={user?.id} />) :
         (<p>Loading Tickets</p>)
         }
 

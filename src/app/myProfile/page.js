@@ -14,12 +14,15 @@ import { useSearchParams, useRouter } from "next/navigation";
 import EventList from "@/components/EventList";
 
 import { useUser } from "@/context/UserContext";
+import TicketList from "@/components/tickets/TicketList";
 
 export default function MyProfile() {
   const router = useRouter();
-  const {user} = useUser();
+  const {user, isLoading: isUserLoading} = useUser();
 
   const [eventList, setEventList] = useState([]);
+  const [ticketList, setTicketList] = useState([]);
+  
   const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
 
@@ -27,10 +30,10 @@ export default function MyProfile() {
     if (router && !router.isReady) {
       //return;
     }
-    //const id = searchParams.get("userId");
-    //console.log(`${id}  ,   ${user?.id}`)
+    if(isUserLoading)return;
+    if(!user)return;
 
-    if(!user) return;
+
     const getEventsOwnedbyOrganizer = async () => {
       try {
         const response = await fetch(`/api/events/get/organizerID/${user.id}`, {
@@ -44,7 +47,20 @@ export default function MyProfile() {
       finally{setLoading(false)}
     };
 
+    const getTicketList = async () => {
+      try{
+          var url = `/api/ticketOwnership/get/user/${user.id}`;
+          const res = await fetch(url, { method: `GET`});
+          const data = await res.json();
+          if (res.ok) {
+            setTicketList(data);
+            //sort ticket list
+          }
+        } catch (e) {
+          console.error(e);
+        }}
     getEventsOwnedbyOrganizer();
+    getTicketList();
   }, [user]);
 
   const handleEventClick = async () => {
@@ -78,7 +94,12 @@ export default function MyProfile() {
         <h3 className="text-2xl font-bold">{user.userType}</h3>
         <p className="text-lg font-medium">{user.name}</p>
         <h3 className="text-2xl font-bold">Your Event List</h3>
+
         <EventList eventList={eventList}></EventList>
+
+        <h3 className="text-2xl font-bold">Your Ticket List</h3>
+        <TicketList ticketList={ticketList} userID={user?.id}></TicketList>
+
 
       </div>
     </div>
