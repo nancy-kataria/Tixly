@@ -3,52 +3,62 @@
 
 import  { useState, useEffect } from "react";
 
-export default function TicketList({ tickets, eventID, userID }) {
+export default function TicketList({ ticketList, userID }) {
   const [sortBy, setSortBy] = useState("status");
-  const [sortedTickets, setSortedTickets] = useState([...tickets]);
+  const [sortedticketList, setSortedticketList] = useState([...ticketList]);
 
+  
   useEffect(() => {
-    if(tickets && Array.isArray(tickets))
-    {
-    // Sort tickets whenever sortBy changes
-    setSortedTickets((prevTickets) =>
-      [...prevTickets].sort((a, b) => {
+    if (ticketList && Array.isArray(ticketList)) {
+      const sortedList = [...ticketList].sort((a, b) => {
         if (sortBy === "seatNumber") {
           return a.seatNumber - b.seatNumber;
         }
-        return a[sortBy].localeCompare(b[sortBy]);
-    }));
+        return a[sortBy]?.localeCompare(b[sortBy]);
+      });
+      setSortedticketList(sortedList);
     }
-  }, [sortBy, tickets]);
+  }, [ticketList, sortBy]);
 
-  const purchaseTicket = async (ticketId) => {
-    try {
-      const res = await fetch(`/api/tickets/purchase/${ticketId}`, {
+  const handleTicketAction = async(ticketId, action) => {
+    try{
+      if(!userID || userID === "") return;
+      console.log("Ticket Action called");
+
+      const res = await fetch(`/api/tickets/update/${ticketId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userID, eventID }),
+        body: JSON.stringify({ userID , action }),
       });
 
-      if (res.ok) {
-        setSortedTickets((prevTickets) =>
-          prevTickets.map((ticket) =>
-            ticket._id === ticketId ? { ...ticket, status: "Sold" } : ticket
-          )
-        );
-      } 
-      else {
-        const errorData = await res.json();
-        console.error("Error purchasing ticket:", errorData.error);
-      }
-    } catch (error) {
-      console.error("Error purchasing ticket:", error);
+      if(res.ok){
+        setSortedticketList((prevticketList) =>
+          prevticketList.map((ticket) =>
+            ticket._id === ticketId ? {
+                ...ticket,
+                  status: action === "purchase" ? "Sold" : "Available",
+                }
+              : ticket
+          ))
+        }
+          else{
+            setSortedticketList(updatedticketList);
+          }
+    }catch(e){
+      console.log(e);
     }
-  };
+  }
+
+  if (!ticketList || ticketList.length === 0)
+    {
+        console.log("TicketList is empty");
+        return <p className="text-sm font-medium">No Tickets yet</p>;
+    }
 
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-gray-600 mt-1">Tickets</h2>
+        <h2 className="text-gray-600 mt-1">ticketList</h2>
         <div>
           <label htmlFor="sort" className="text-gray-600 mt-1">Sort By:</label>
           <select
@@ -64,7 +74,7 @@ export default function TicketList({ tickets, eventID, userID }) {
       </div>
 
       <div className="grid grid-cols-3 gap-4">
-        {sortedTickets.map((ticket) => (
+        {sortedticketList.map((ticket) => (
           <div
             key={ticket._id}
             className="text-gray-600 mt-1 rounded shadow-md flex flex-col items-center"
@@ -72,15 +82,43 @@ export default function TicketList({ tickets, eventID, userID }) {
             <span className="text-lg font-semibold">Seat {ticket.seatNumber}</span>
             
             <span className="mt-2">${ticket.price}</span>
-            <button
-              disabled={ticket.status !== "Available"}
-              onClick={() => purchaseTicket(ticket._id)}
-              className={`mt-4 px-4 py-2 rounded text-white ${
-                ticket.status === "Available" ? "bg-green-500" : "bg-gray-500"
-              }`}
-            >
-              {ticket.status === "Available" ? "Buy" : "Sold"}
-            </button>
+
+            {/*If The ticket is available and the User doesnt own it "buy" */}
+            {ticket.status === "Available" && !ticket.isOwnedByUser && (
+              <button
+                onClick={() => handleTicketAction(ticket._id, "purchase")}
+                className="mt-4 px-4 py-2 rounded text-white bg-green-500"
+              >
+                Buy
+              </button>
+            )}
+            {/*If The ticket is not available and the User owns it "sell" */}
+            {ticket.status !== "Available" && ticket.isOwnedByUser && (
+              <button
+                onClick={() => handleTicketAction(ticket._id, "sell")}
+                className="mt-4 px-4 py-2 rounded text-white bg-yellow-500"
+              >
+                Sell
+              </button>
+            )}
+            {/*If The ticket is available and the User owns it "cancel sell" */}
+            {ticket.status === "Available" && ticket.isOwnedByUser && (
+              <button
+                onClick={() => handleTicketAction(ticket._id, "cancel")}
+                className="mt-4 px-4 py-2 rounded text-white bg-red-500"
+              >
+                Cancel
+              </button>
+            )}
+            {/*If The ticket is not available and the User doesnt own it "Unavailable" */}
+            {ticket.status !== "Available" && !ticket.isOwnedByUser && (
+              <button
+                disabled
+                className="mt-4 px-4 py-2 rounded text-white bg-gray-500 cursor-not-allowed"
+              >
+                Unavailable
+              </button>
+            )}
           </div>
         ))}
       </div>

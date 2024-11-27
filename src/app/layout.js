@@ -1,7 +1,8 @@
 import localFont from "next/font/local";
-import { AuthProvider } from "@/context/AuthContext";
 
-import "./globals.css";
+import Navbar from "@/components/Navbar";
+import "./global.css"
+import { UserProvider } from "@/context/UserContext";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -19,12 +20,15 @@ export const metadata = {
   description: "Event Ticket Booking App",
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <AuthProvider>{children}</AuthProvider>
+          <UserProvider><Navbar/><main>{children}</main></UserProvider>
+          
+
       </body>
     </html>
   );
 }
+

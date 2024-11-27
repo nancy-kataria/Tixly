@@ -1,9 +1,7 @@
 "use client";
 
-import Navbar from "@/components/Navbar";
-import { useAuth } from "@/context/AuthContext";
+
 import { useEffect, useState } from "react";
-import concert from "../../../public/concert.jpg";
 // import { useRouter } from "next/router";
 // This is the same useRouter hook, but can be used in both
 // app and pages directories.
@@ -11,24 +9,33 @@ import concert from "../../../public/concert.jpg";
 // error when the pages router is not mounted, and instead has a
 // return type of NextRouter | null. This allows developers to
 // convert components to support running in both app and pages as they transition to the app router.
-import { useRouter } from "next/compat/router";
-import { useSearchParams } from "next/navigation";
-import Image from "next/image";
+//import { useRouter } from "next/compat/router";
+import { useSearchParams, useRouter } from "next/navigation";
+import EventList from "@/components/EventList";
+
+import { useUser } from "@/context/UserContext";
+import TicketList from "@/components/tickets/TicketList";
 
 export default function MyProfile() {
   const router = useRouter();
-  const { user } = useAuth();
-  const [eventList, setEventList] = useState([]);
-  const searchParams = useSearchParams();
+  const {user, isLoading: isUserLoading} = useUser();
 
+  const [eventList, setEventList] = useState([]);
+  const [ticketList, setTicketList] = useState([]);
+  
+  const [loading, setLoading] = useState(true);
+  const[transactions, setTransactions]=useState([]);  
+
+
+  //Organizer Events
   useEffect(() => {
     if (router && !router.isReady) {
-      return;
+      //return;
     }
-    const id = searchParams.get("userId");
+    if(isUserLoading || !user)return;
     const getEventsOwnedbyOrganizer = async () => {
       try {
-        const response = await fetch(`/api/events/get/organizerID/${id}`, {
+        const response = await fetch(`/api/events/get/organizerID/${user.id}`, {
           method: "GET",
         });
         const data = await response.json();
@@ -37,60 +44,120 @@ export default function MyProfile() {
         console.error(error);
       }
     };
-
     getEventsOwnedbyOrganizer();
-  }, []);
+  }, [user, isUserLoading]);
 
-  console.log(user);
-  console.log(eventList);
+//TicketList
+  useEffect(() => {
+    if(isUserLoading || !user)return;
+    const getTicketList = async () => {
+      try{
+          var url = `/api/ticketOwnership/get/user/${user.id}`;
+          const res = await fetch(url, { method: `GET`});
+          const data = await res.json();
+          if (res.ok) {
+            setTicketList(data);
+            //sort ticket list
+          }
+        } catch (e) {
+          console.error(e);
+        }};
+      getTicketList();
+    },[user,isUserLoading]);
+
+    //Transactions
+  useEffect(() => {
+    if(isUserLoading || !user)return;
+    const getTransactions = async()=>{
+      try{
+
+        var url = `/api/users/get/transactions/${user.id}`;
+              const res = await fetch(url, { method: `GET`});
+              const data = await res.json();
+              if (res.ok) {
+                setTransactions(data.transactions);
+                //sort ticket list
+              }
+      }catch(e)
+      {
+        console.error(e);
+      }};
+  getTransactions()
+  console.log("Transactions", transactions);
+
+},[user,isUserLoading]);
+
+
+useEffect(() => {
+  if (!isUserLoading && user) {
+    setLoading(false);
+  }
+}, [isUserLoading, user]);
+
+  //console.log(user);
+  //console.log(eventList);
+
+  if(loading){
+    return(<div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <p className="text-lg font-medium text-gray-600">Loading...</p>
+    </div>
+    );
+  }
+
+  if(!user){
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <p className="text-lg font-medium text-gray-600">
+          You need to log in to view this page.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-100">
-      <Navbar router={router} />
       <div className="text-gray-800">
         <h3 className="text-2xl font-bold">{user.userType}</h3>
         <p className="text-lg font-medium">{user.name}</p>
         <h3 className="text-2xl font-bold">Your Event List</h3>
-        {eventList.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {eventList.map((event) => (
+
+        <EventList eventList={eventList}></EventList>
+
+        <h3 className="text-2xl font-bold">Your Ticket List</h3>
+        <TicketList ticketList={ticketList} userID={user?.id}></TicketList>
+
+
+        <div className="flex justify-between items-center mb-4">
+        <h2 className="text-gray-600 mt-1">Transaction List</h2>
+
+          <div className="grid grid-cols-3 gap-4">
+            {transactions.map((transaction) => (
               <div
-                key={event._id}
-                onClick={() => {
-                  router.push(`/event/${event._id}`);
-                }}
-                className="w-full max-w-lg p-4 bg-white border border-gray-300 rounded-lg shadow-md flex items-center space-x-4"
+                key={transaction._id}
+                className="text-gray-600 mt-1 rounded shadow-md flex flex-col items-center"
               >
-                {/* Event Image */}
-                <Image
-                  src={concert}
-                  alt="concert-image"
-                  className="w-24 h-24 rounded-lg object-cover"
-                />
+                <span className="mt-2">Transaction Date:  {transaction?.transactionDate}</span>
+                <span className="mt-2">Transaction Type:  {transaction?.transactionType}</span>
+                <span className="mt-2">Status:  {transaction?.status}</span>
+                <h2 className="text-gray-600 mt-1">Tickets</h2>
+                <div className="grid grid-cols-3 gap-4">
+                    {transaction.tickets.map((ticket) => (
+                      <div
+                      key={ticket._id}
+                      className="text-gray-600 mt-1 rounded shadow-md flex flex-col items-center"
+                      >
+                        <span className="mt-2">Price:  ${ticket?.price}</span>
+                        <span className="mt-2">Status:  {ticket?.status}</span>
+                        <span className="mt-2">Seat Number:  {ticket?.seatNumber}</span>
 
-                {/* Event Details */}
-                <div>
-                  {/* Event Name */}
-                  <h2 className="text-2xl font-bold text-gray-800">
-                    {event.eventName}
-                  </h2>
 
-                  {/* Date and Venue */}
-                  <div className="text-gray-600 mt-2">
-                    <p className="text-sm font-medium">
-                      📅 Date: ({new Date(event.eventDate).toLocaleDateString()}
-                      )
-                    </p>
-                    <p className="text-sm font-medium">
-                      📍 Venue: {event.venue}
-                    </p>
-                  </div>
+                      </div>
+                    ))}
                 </div>
               </div>
             ))}
           </div>
-        ) : (
-          <p className="text-sm font-medium">No events yet</p>
-        )}
+        </div>
       </div>
     </div>
   );

@@ -1,7 +1,5 @@
 "use client";
 import { useState, useEffect } from "react";
-import Navbar from "@/components/Navbar";
-import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/compat/router";
 
 export default function CreateEvent() {
@@ -14,7 +12,6 @@ export default function CreateEvent() {
     eventCategory: "",
   });
   const router = useRouter();
-  const { user } = useAuth();
 
   const handleSubmit = async () => {
     const payload = {
@@ -43,8 +40,6 @@ export default function CreateEvent() {
 
   return (
     <>
-      <Navbar router={router} />
-
       <div className="max-w-lg mx-auto mt-10 bg-white p-8 rounded-lg shadow-md">
         <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">
           Add Event
