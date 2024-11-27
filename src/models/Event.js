@@ -3,7 +3,7 @@ import {seatSchema} from "./Venue.js";
 const {Schema, SchemaTypes, model} = mongoose;
 
 
-const ticketSchema = new Schema({
+export const ticketSchema = new Schema({
     _id: {type:SchemaTypes.ObjectId, auto: true},
     seatNumber: {type: Number, required: true},
     price: {type:Number, default: 0},
@@ -32,5 +32,4 @@ const eventSchema = new Schema (
 );
 
 const Event = models.Event || model("Event", eventSchema);
-export {ticketSchema};
 export default Event;

@@ -1,5 +1,6 @@
 import connectDB from "@/lib/mongooseDB";
 import TicketOwnership from "@/models/TicketOwnership";
+import { ticketSchema } from "@/models/Event";
 
 export async function PATCH(request, { params }) {
   const { id } = await params;

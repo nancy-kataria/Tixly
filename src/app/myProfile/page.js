@@ -24,16 +24,15 @@ export default function MyProfile() {
   const [ticketList, setTicketList] = useState([]);
   
   const [loading, setLoading] = useState(true);
-  const searchParams = useSearchParams();
+  const[transactions, setTransactions]=useState([]);  
 
+
+  //Organizer Events
   useEffect(() => {
     if (router && !router.isReady) {
       //return;
     }
-    if(isUserLoading)return;
-    if(!user)return;
-
-
+    if(isUserLoading || !user)return;
     const getEventsOwnedbyOrganizer = async () => {
       try {
         const response = await fetch(`/api/events/get/organizerID/${user.id}`, {
@@ -44,9 +43,13 @@ export default function MyProfile() {
       } catch (error) {
         console.error(error);
       }
-      finally{setLoading(false)}
     };
+    getEventsOwnedbyOrganizer();
+  }, [user, isUserLoading]);
 
+//TicketList
+  useEffect(() => {
+    if(isUserLoading || !user)return;
     const getTicketList = async () => {
       try{
           var url = `/api/ticketOwnership/get/user/${user.id}`;
@@ -58,18 +61,41 @@ export default function MyProfile() {
           }
         } catch (e) {
           console.error(e);
-        }}
-    getEventsOwnedbyOrganizer();
-    getTicketList();
-  }, [user]);
+        }};
+      getTicketList();
+    },[user,isUserLoading]);
 
-  const handleEventClick = async () => {
-    
+    //Transactions
+  useEffect(() => {
+    if(isUserLoading || !user)return;
+    const getTransactions = async()=>{
+      try{
+
+        var url = `/api/users/get/transactions/${user.id}`;
+              const res = await fetch(url, { method: `GET`});
+              const data = await res.json();
+              if (res.ok) {
+                setTransactions(data.transactions);
+                //sort ticket list
+              }
+      }catch(e)
+      {
+        console.error(e);
+      }};
+  getTransactions()
+  console.log("Transactions", transactions);
+
+},[user,isUserLoading]);
+
+
+useEffect(() => {
+  if (!isUserLoading && user) {
+    setLoading(false);
   }
+}, [isUserLoading, user]);
 
-
-  console.log(user);
-  console.log(eventList);
+  //console.log(user);
+  //console.log(eventList);
 
   if(loading){
     return(<div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -101,6 +127,37 @@ export default function MyProfile() {
         <TicketList ticketList={ticketList} userID={user?.id}></TicketList>
 
 
+        <div className="flex justify-between items-center mb-4">
+        <h2 className="text-gray-600 mt-1">Transaction List</h2>
+
+          <div className="grid grid-cols-3 gap-4">
+            {transactions.map((transaction) => (
+              <div
+                key={transaction._id}
+                className="text-gray-600 mt-1 rounded shadow-md flex flex-col items-center"
+              >
+                <span className="mt-2">Transaction Date:  {transaction?.transactionDate}</span>
+                <span className="mt-2">Transaction Type:  {transaction?.transactionType}</span>
+                <span className="mt-2">Status:  {transaction?.status}</span>
+                <h2 className="text-gray-600 mt-1">Tickets</h2>
+                <div className="grid grid-cols-3 gap-4">
+                    {transaction.tickets.map((ticket) => (
+                      <div
+                      key={ticket._id}
+                      className="text-gray-600 mt-1 rounded shadow-md flex flex-col items-center"
+                      >
+                        <span className="mt-2">Price:  ${ticket?.price}</span>
+                        <span className="mt-2">Status:  {ticket?.status}</span>
+                        <span className="mt-2">Seat Number:  {ticket?.seatNumber}</span>
+
+
+                      </div>
+                    ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

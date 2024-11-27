@@ -34,13 +34,13 @@ export async function PUT(request, {params}) {
                 status: 404,
             });
         }
-
+        //console.log(JSON.stringify(ticket));
         const transactionTemplate = {
-            ticketID: id,
-            eventID: event._id,
             transactionDate: new Date(),
-            price: ticket.price,
+            status: "Completed",
+            tickets: [ticket],
         };
+
         //ticketowneship should only change the user
         const ownershipQuery = TicketOwnership.findOneAndUpdate({"ticket": id}, {userID}, {new: true});
 
@@ -50,20 +50,18 @@ export async function PUT(request, {params}) {
               transactions: {
                 ...transactionTemplate,
                 transactionType: "purchase",
-                status: "Completed",
               },
             },
-          });
+          }, {new: true});
       
           const sellerQuery = User.findByIdAndUpdate(ownerID, {
             $push: {
               transactions: {
                 ...transactionTemplate,
                 transactionType: "sell",
-                status: "Completed",
               },
             },
-          });
+          }, {new: true});
 
         switch(action)
         {
@@ -95,12 +93,14 @@ export async function PUT(request, {params}) {
         }
         await event.save()
         const updatedOwnership = await ownershipQuery.exec();
+        var buyer, seller;
         if(action ==="purchase" || action==="sell")
         {
-            await buyerQuery.exec();
-            await sellerQuery.exec();
+             buyer = await buyerQuery.exec();
+             seller = await sellerQuery.exec();
+             console.log(JSON.stringify(buyer));
         }
-
+        //console.log(JSON.stringify(seller));
         await session.commitTransaction();
         session.endSession()
 
