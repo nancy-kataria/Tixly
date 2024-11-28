@@ -10,10 +10,10 @@ import { useUser } from "@/context/UserContext";
 
 // pages/EventPage.js
 export default function EventPage({ params }) {
-  const {user, isLoading: isUserLoading} = useUser();
+  const { user, isLoading: isUserLoading } = useUser();
 
   const [event, setEvent] = useState({});
-  const[sortBy, setSortBy] = useState("status");
+  const [sortBy, setSortBy] = useState("status");
   const [sortedTickets, setSortedTickets] = useState([]);
   const router = useRouter();
 
@@ -21,7 +21,6 @@ export default function EventPage({ params }) {
   const [response, setResponse] = useState("");
   const [boxOpen, setBoxOpen] = useState(false);
 
-  
   const getGenAIresponse = async () => {
     try {
       const res = await fetch("/api/genAI", {
@@ -42,38 +41,36 @@ export default function EventPage({ params }) {
 
   useEffect(() => {
     //wait for the user context
-    if(isUserLoading) return;
+    if (isUserLoading) return;
 
     const getRequest = async () => {
       const eventId = (await params).id;
 
       try {
         var url = `/api/events/get/eventID/${eventId}`;
-        if(user && user.id)
-          url += `?userID=${user.id}`
-        const res = await fetch(url, { method: `GET`});
+        if (user && user.id) url += `?userID=${user.id}`;
+        const res = await fetch(url, { method: `GET` });
         const data = await res.json();
         if (res.ok) {
           setEvent(data);
           //sort ticket list
-          setSortedTickets([...data.tickets]);//.sort((a,b)=>a[sortBy].localCompare(b[sortBy])));
+          setSortedTickets([...data.tickets]); //.sort((a,b)=>a[sortBy].localCompare(b[sortBy])));
 
-          if (data?.eventArtist) {
-            setPromptInput(`Tell me something about ${data?.eventArtist}`);
+          if (data?.event?.eventArtist) {
+            setPromptInput(
+              `Tell me something about ${data?.event?.eventArtist}`
+            );
           }
         } else setEvent({});
       } catch (e) {
         console.error(e);
       }
-
-
     };
 
     getRequest();
   }, [params, sortBy, user, isUserLoading]);
 
-  
-  const date = new Date(event?.eventDate);
+  const date = new Date(event?.event?.eventDate);
   return (
     <>
       <div className="flex flex-col items-center min-h-screen bg-gray-100 p-8">
@@ -89,22 +86,22 @@ export default function EventPage({ params }) {
         {/* Event Details */}
         <div className="w-full max-w-2xl bg-white mt-6 p-6 rounded-lg shadow-lg">
           <h1 className="text-3xl font-bold text-gray-800">
-            {event?.eventName}
+            {event?.event?.eventName}
           </h1>
           <h1 className="text-xl font-bold text-gray-800">
-            {event?.eventArtist}
+            {event?.event?.eventArtist}
           </h1>
           <p className="text-gray-600 mt-2">
             <span className="font-semibold">📍 Venue:</span>{" "}
-            {event?.venue?.name}
+            {event?.event?.venue?.name}
           </p>
           <p className="text-gray-600 mt-1">
             <span className="font-semibold">📌 Address:</span>{" "}
-            {event?.venue?.address}
+            {event?.event?.venue?.address}
           </p>
           <p className="text-gray-600 mt-1">
             <span className="font-semibold">🎫 Total Tickets Available:</span>{" "}
-            {event?.venue?.totalSeats}
+            {event?.event?.venue?.totalSeats}
           </p>
           <p className="text-gray-600 mt-1">
             <span className="font-semibold">📅 Date:</span>{" "}
@@ -112,10 +109,11 @@ export default function EventPage({ params }) {
           </p>
         </div>
 
-    {event.tickets && Array.isArray(event.tickets) ? 
-        (<TicketList ticketList={event.tickets} userID={user?.id} />) :
-        (<p>Loading Tickets</p>)
-        }
+        {event.tickets && Array.isArray(event.tickets) ? (
+          <TicketList ticketList={event.tickets} userID={user?.id} />
+        ) : (
+          <p>Loading Tickets</p>
+        )}
 
         <div className="text-center">
           {!boxOpen ? (
