@@ -10,10 +10,16 @@ export async function POST(req) {
     const { email, password } = await req.json();
   
     const user = await User.findOne({ email });
+    if(!user)
+    {
+      if (!user || !(samepassword || sameDeCryptPassword)) {
+        return new Response(JSON.stringify({ error: 'Invalid email/user does not exist' }), { status: 401 });
+      }
+    }
     const sameDeCryptPassword = await bcrypt.compare(password, user.password);
     const samepassword = password == user.password;
-    if (!user || !(samepassword || sameDeCryptPassword)) {
-      return new Response(JSON.stringify({ error: 'Invalid email or password' }), { status: 401 });
+    if ( !samepassword && !sameDeCryptPassword) {
+      return new Response(JSON.stringify({ error: ' Passwords do not match' }), { status: 401 });
     }
 
     const {token, headers} = await createUserCookie(user);
