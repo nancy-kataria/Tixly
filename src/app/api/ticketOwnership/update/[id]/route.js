@@ -1,5 +1,6 @@
 import connectDB from "@/lib/mongooseDB";
 import TicketOwnership from "@/models/TicketOwnership";
+import User from "@/models/Users";
 
 export async function PATCH(request, { params }) {
   const { id } = await params;
@@ -14,7 +15,6 @@ export async function PATCH(request, { params }) {
   try {
     await connectDB();
     const transferUserId = await User.findOne({email: data.userEmail})
-    console.log(transferUserId._id.toString())
 
     // Find the ownership record and update the userID
     const updatedRecord = await TicketOwnership.findByIdAndUpdate(
