@@ -11,8 +11,10 @@ export async function PUT(request, {params}) {
     await connectDB();
     const session = await mongoose.startSession();
     try{
+        //Transaction that will rollback if any update fails
         session.startTransaction();
 
+        //find the current owner of the ticket
         const oldOwnership = await TicketOwnership.findOne({"ticket": id});
         if (!oldOwnership)
         {
@@ -21,6 +23,7 @@ export async function PUT(request, {params}) {
         }
         const ownerID = oldOwnership.userID.toString();
 
+        //Find the event of the ticket
         const event = await Event.findOne({ "tickets._id": id });
         if (!event) {
             return new Response(JSON.stringify({ error: "Event not found" }), {
@@ -28,13 +31,14 @@ export async function PUT(request, {params}) {
             });
         }
 
+        //get the ticket embedded in the event
         const ticket = event.tickets.find((t) => t._id.toString() === id);
         if (!ticket) {
             return new Response(JSON.stringify({ error: "Ticket not found" }), {
                 status: 404,
             });
         }
-        //console.log(JSON.stringify(ticket));
+        //Template data to be used in a transaction
         const transactionTemplate = {
             transactionDate: new Date(),
             status: "Completed",
@@ -44,7 +48,7 @@ export async function PUT(request, {params}) {
         //ticketowneship should only change the user
         const ownershipQuery = TicketOwnership.findOneAndUpdate({"ticket": id}, {userID}, {new: true});
 
-
+        //Base Query made here and adjustments are made based on action of request
         const buyerQuery = User.findByIdAndUpdate(userID, {
             $push: {
               transactions: {
@@ -63,20 +67,25 @@ export async function PUT(request, {params}) {
             },
           }, {new: true});
 
+        //Action determines what should be done (purchase, sell, cancel sell)
+        //If Purchase or Sell, Users get a transaction
+        
         switch(action)
         {
+            //If buying, ticket status should be sold. Non owners should not interact with the ticket
             case "purchase":
                 {
                     ticket.status="Sold";
                     break;
                 }
+            //If selling, the ticket status should be available
             case "sell":
                 {
                     ticket.status="Available";
-                    //add transaction to Original Owner
-                    //add transaction to buyer
+
                     break;
                 }
+                //Cancel is for when a user was selling a ticket, but no longer wants to sell it. They would still own it
             case "cancel":
                 {
                     ticket.status="Sold";
@@ -85,22 +94,28 @@ export async function PUT(request, {params}) {
                 }
             default:
                 {
+                    //No action/invalid action
                     return new Response(
                         JSON.stringify({ error: "Invalid action specified" }),
                         { status: 400 }
                       );
                 }
         }
+        //This saves the ticket status in event
         await event.save()
+
+        //Update the owner of the ticket
+        //should only change in purchase/sell, but cant move it now
         const updatedOwnership = await ownershipQuery.exec();
         var buyer, seller;
+        //If buying or selling the ticket, add a transaction to the buyer and seller
         if(action ==="purchase" || action==="sell")
         {
              buyer = await buyerQuery.exec();
              seller = await sellerQuery.exec();
              console.log(JSON.stringify(buyer));
         }
-        //console.log(JSON.stringify(seller));
+        //Commit
         await session.commitTransaction();
         session.endSession()
 
