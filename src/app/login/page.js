@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@/context/UserContext";
 //import { signIn } from "next-auth/react";
 
-
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true); // Toggle between login and signup
   const [email, setEmail] = useState("");
@@ -12,73 +11,38 @@ export default function LoginPage() {
   const [name, setName] = useState(""); // Only used for signup
   const [userType, setUserType] = useState("User"); // Only used for signup
 
-  const {refreshUser} = useUser();
+  const { refreshUser } = useUser();
 
   //const { setUser } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e) => {
-
     e.preventDefault();
-    const url = isLogin ? "/api/auth/signIn" : "/api/auth/signUp";
+    const url = isLogin ? "/api/auth/signin" : "/api/auth/signUp";
     const body = isLogin
       ? { email, password }
       : { name, email, password, userType };
 
-      //For next-auth
-      /*
-    if (!isLogin){
-        const res = await fetch("/api/auth/signup", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        });
-
-        if (!res.ok) return;
-        const data = await res.json();
-
-    }  
-    
-    const result = await signIn("credentials", {
-      redirect:false,
-      email, 
-      password
+    //for cookie
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
     });
-    */
 
-//for cookie
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+    console.log(res);
 
-  if (!res.ok) return;
-  const data = await res.json();
+    if (!res.ok) return;
+    const data = await res.json();
 
-    if (res.error){
+    if (res.error) {
       alert(res.error);
-    }
-    else
-    {
+    } else {
       alert("Logged in");
       await refreshUser();
       console.log(res);
       router.push("/");
     }
-
-
-    /*
-    const data = await res.json();
-    if (res.ok) {
-      alert(isLogin ? "Login successful!" : "Signup successful!");
-      //setUser(data);
-      router.push("/");
-      // Optionally, redirect to the homepage or another page
-    } else {
-      alert(data.error || "An error occurred");
-    }
-      */
   };
 
   return (
