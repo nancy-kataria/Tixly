@@ -14,7 +14,10 @@ export default function CreateEvent() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
 
-  const openModal = () => setIsModalOpen(true);
+  const openModal = () => {
+    setIsModalOpen(true);
+    getVenueList();
+  };
   const closeModal = () => setIsModalOpen(false);
 
   const handleSubmit = async () => {
@@ -33,6 +36,17 @@ export default function CreateEvent() {
       alert("Error saving Event");
     }
   };
+
+  const getVenueList = async() => {
+    const res = await fetch("/api/venues/get/venueList", {
+      method: "GET"
+    });
+
+    if (res.ok){
+      const data = await res.json();
+      console.log(data)
+    }
+  }
 
   const handleFormDataChange = (e) => {
     const { name, value } = e.target;
