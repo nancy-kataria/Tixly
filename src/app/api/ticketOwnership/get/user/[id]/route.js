@@ -42,10 +42,6 @@ export async function GET(req, {params}) {
             };
           });
 
-
-
-        console.log(JSON.stringify(result));
-      //console.log(JSON.stringify(tickets));
       return new Response(JSON.stringify(result), { status: 201 });
     } catch (error) {
         console.log(error);
