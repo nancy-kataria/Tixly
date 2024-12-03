@@ -1,8 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/compat/router";
+import { useUser } from "@/context/UserContext";
 
 export default function CreateEvent() {
+  const { user, isLoading: isUserLoading } = useUser();
   const [formData, setFormData] = useState({
     eventName: "",
     venue: "",
@@ -12,18 +14,20 @@ export default function CreateEvent() {
     eventCategory: "",
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [venueList, setVenueList] = useState([]);
+  const [selectedVenue, setSelectedVenue] = useState({});
   const router = useRouter();
 
   const openModal = () => {
-    setIsModalOpen(true);
     getVenueList();
+    setIsModalOpen(true);
   };
   const closeModal = () => setIsModalOpen(false);
 
   const handleSubmit = async () => {
     const payload = {
       ...formData,
-      organizerId: user._id,
+      organizerId: user.id,
     };
     const response = await fetch("/api/events/create", {
       method: "POST",
@@ -37,16 +41,18 @@ export default function CreateEvent() {
     }
   };
 
-  const getVenueList = async() => {
+  console.log(formData)
+
+  const getVenueList = async () => {
     const res = await fetch("/api/venues/get/venueList", {
-      method: "GET"
+      method: "GET",
     });
 
-    if (res.ok){
+    if (res.ok) {
       const data = await res.json();
-      console.log(data)
+      setVenueList(data);
     }
-  }
+  };
 
   const handleFormDataChange = (e) => {
     const { name, value } = e.target;
@@ -154,7 +160,7 @@ export default function CreateEvent() {
             </p>
           )}
 
-          <div>
+          {/* <div>
             <label
               className="block text-gray-700 font-medium mb-1"
               htmlFor="venueId"
@@ -172,13 +178,20 @@ export default function CreateEvent() {
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-400"
               placeholder="Enter venue ID"
             />
-          </div>
+          </div> */}
           <button
             onClick={openModal}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
-            Open Modal
+            Click to select a Venue
           </button>
+
+          {formData.venue && (
+            <p className="mt-2 text-sm text-gray-600">
+              Selected Venue:{" "}
+              <span className="font-medium">{selectedVenue.name}</span>
+            </p>
+          )}
           <div>
             <label
               className="block text-gray-700 font-medium mb-1"
@@ -231,26 +244,41 @@ export default function CreateEvent() {
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full">
-            <h2 className="text-xl font-semibold mb-4">Modal Title</h2>
-            <p className="mb-4">
-              This is a modal content example. You can put anything here!
-            </p>
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full text-gray-800">
+            <h2 className="text-xl font-semibold mb-4">
+              Select a Venue for your event
+            </h2>
+            {venueList.map((venue) => (
+              <div
+                key={venue._id}
+                onClick={() => {
+                  setFormData({
+                    ...formData,
+                    venue: venue._id,
+                  });
+                  setSelectedVenue(venue);
+                }}
+                className="w-full max-w-lg p-4 bg-white border border-gray-300 rounded-lg shadow-md flex items-center space-x-4"
+              >
+                {/* venue Details */}
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-800">
+                    {venue.name}
+                  </h2>
+                  <div className="text-gray-600 mt-2">
+                    <p className="text-sm font-medium">
+                      📍 Address: {venue.address}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
             <div className="flex justify-end space-x-4">
               <button
                 onClick={closeModal}
                 className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
               >
                 Close
-              </button>
-              <button
-                onClick={() => {
-                  alert("Action executed!");
-                  closeModal();
-                }}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-              >
-                Confirm
               </button>
             </div>
           </div>
