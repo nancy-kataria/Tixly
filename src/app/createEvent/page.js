@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/compat/router";
 import { useUser } from "@/context/UserContext";
+import VenueListModal from "@/components/Modals/venueListModal";
 
 export default function CreateEvent() {
   const { user, isLoading: isUserLoading } = useUser();
@@ -41,7 +42,7 @@ export default function CreateEvent() {
     }
   };
 
-  console.log(formData)
+  console.log(formData);
 
   const getVenueList = async () => {
     const res = await fetch("/api/venues/get/venueList", {
@@ -159,26 +160,6 @@ export default function CreateEvent() {
               You selected: {formData.eventCategory}
             </p>
           )}
-
-          {/* <div>
-            <label
-              className="block text-gray-700 font-medium mb-1"
-              htmlFor="venueId"
-            >
-              {" "}
-              Venue ID{" "}
-            </label>
-            <input
-              type="text"
-              id="venueId"
-              name="venue"
-              value={formData.venue}
-              onChange={handleFormDataChange}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-400"
-              placeholder="Enter venue ID"
-            />
-          </div> */}
           <button
             onClick={openModal}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
@@ -243,46 +224,13 @@ export default function CreateEvent() {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full text-gray-800">
-            <h2 className="text-xl font-semibold mb-4">
-              Select a Venue for your event
-            </h2>
-            {venueList.map((venue) => (
-              <div
-                key={venue._id}
-                onClick={() => {
-                  setFormData({
-                    ...formData,
-                    venue: venue._id,
-                  });
-                  setSelectedVenue(venue);
-                }}
-                className="w-full max-w-lg p-4 bg-white border border-gray-300 rounded-lg shadow-md flex items-center space-x-4"
-              >
-                {/* venue Details */}
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-800">
-                    {venue.name}
-                  </h2>
-                  <div className="text-gray-600 mt-2">
-                    <p className="text-sm font-medium">
-                      📍 Address: {venue.address}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-            <div className="flex justify-end space-x-4">
-              <button
-                onClick={closeModal}
-                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
+        <VenueListModal
+          venueList={venueList}
+          setFormData={setFormData}
+          formData={formData}
+          closeModal={closeModal}
+          setSelectedVenue={setSelectedVenue}
+        />
       )}
     </>
   );
