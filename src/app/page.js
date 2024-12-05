@@ -10,9 +10,11 @@ export default function HomePage() {
   const [eventList, setEventList] = useState([]);
 
   const handleSearch = async () => {
-    const res = await fetch(
-      `/api/events/search?query=${encodeURIComponent(query)}`
-    );
+    let url = `/api/events/get/eventList`;
+    if (query) {
+      url = `/api/events/get/eventList?eventName=${query}`;
+    }
+    const res = await fetch(url);
     const data = await res.json();
     setEventList(data);
   };
@@ -32,7 +34,7 @@ export default function HomePage() {
     };
 
     getRequest();
-  }, []);
+  }, [query]);
 
   return (
     <>
@@ -40,18 +42,20 @@ export default function HomePage() {
         style={{ padding: "2rem", textAlign: "center" }}
         className="min-h-screen bg-gray-100"
       >
-        <h2 className="text-4xl font-bold text-gray-800 mb-8">Welcome to Tixly!</h2>
+        <h2 className="text-4xl font-bold text-gray-800 mb-8">
+          Welcome to Tixly!
+        </h2>
         {/* Search Bar */}
-        {/* <input
-        type="text"
-        placeholder="Search for events..."
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        style={{ padding: '0.5rem', width: '60%', marginRight: '0.5rem' }}
-      />
-      <button onClick={handleSearch} style={{ padding: '0.5rem 1rem' }}>
-        Search
-      </button> */}
+        <input
+          type="text"
+          placeholder="Search for events..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          style={{ padding: "0.5rem", width: "60%", marginRight: "0.5rem" }}
+        />
+        <button onClick={handleSearch} style={{ padding: "0.5rem 1rem" }}>
+          Search
+        </button>
         {/* Display search results */}
         <EventList eventList={eventList}></EventList>
       </div>

@@ -6,7 +6,16 @@ import User from '@/models/Users';
 export async function GET(request) {
     try {
         await connectDB();
-        const events = await Event.find({}, 'eventName eventDate')
+
+        const url = new URL(request.url);
+        const eventNameQuery = url.searchParams.get('eventName');
+
+        const query = {};
+        if (eventNameQuery) {
+            query.eventName = { $regex: eventNameQuery, $options: 'i' }; // Case-insensitive search
+        }
+
+        const events = await Event.find(query, 'eventName eventDate')
             .populate({
                 path: 'venue',
                 select: 'name address',
