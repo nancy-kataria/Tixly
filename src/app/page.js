@@ -40,7 +40,7 @@ export default function HomePage() {
         style={{ padding: "2rem", textAlign: "center" }}
         className="min-h-screen bg-gray-100"
       >
-        <h2 className="text-4xl font-bold text-gray-800 mb-8">Welcome to Event Search</h2>
+        <h2 className="text-4xl font-bold text-gray-800 mb-8">Welcome to Tixly!</h2>
         {/* Search Bar */}
         {/* <input
         type="text"
