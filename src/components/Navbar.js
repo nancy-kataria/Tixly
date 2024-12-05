@@ -40,10 +40,10 @@ export default function Navbar() {
 
   
   return (
-    <nav className="flex items-center justify-between px-6 py-4 bg-blue-500 text-white shadow-md">
+    <nav className="flex items-center justify-between px-6 py-4 bg-black-500 text-white shadow-md">
       {/* Logo */}
       <Link href="/" passHref>
-        <div className="text-xl font-bold cursor-pointer">Event Booking</div>
+        <div className="text-xl font-bold cursor-pointer">Tixly</div>
       </Link>
 
       {/* Navigation Links */}
