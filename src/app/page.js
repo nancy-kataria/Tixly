@@ -34,7 +34,7 @@ export default function HomePage() {
     };
 
     getRequest();
-  }, [query]);
+  }, []);
 
   return (
     <>

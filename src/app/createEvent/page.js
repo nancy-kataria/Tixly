@@ -42,8 +42,6 @@ export default function CreateEvent() {
     }
   };
 
-  console.log(formData);
-
   const getVenueList = async () => {
     const res = await fetch("/api/venues/get/venueList", {
       method: "GET",
