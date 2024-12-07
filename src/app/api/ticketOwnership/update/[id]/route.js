@@ -14,12 +14,12 @@ export async function PATCH(request, { params }) {
   }
   try {
     await connectDB();
-    const transferUserId = await User.findOne({email: data.userEmail})
+    const transferUserId = await User.findOne({ email: data.userEmail });
 
     // Find the ownership record and update the userID
-    const updatedRecord = await TicketOwnership.findByIdAndUpdate(
-      id,
-      { userID: transferUserId._id.toString() }, // Update the userID field
+    const updatedRecord = await TicketOwnership.findOneAndUpdate(
+      { ticket: id },
+      { $set: { userID: transferUserId._id.toString() } }, // Update the userID field
       { new: true, runValidators: true } // Return the updated document
     );
 
@@ -28,7 +28,9 @@ export async function PATCH(request, { params }) {
         status: 404,
       });
     }
-    return new Response(JSON.stringify({ data: updatedRecord }), { status: 200 });
+    return new Response(JSON.stringify({ data: updatedRecord }), {
+      status: 200,
+    });
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
