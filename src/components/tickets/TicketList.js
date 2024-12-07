@@ -1,13 +1,26 @@
 // components/TicketList.js
 "use client";
 
-import  { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import SellTicketModal from "../Modals/sellTicketModal";
 
 export default function TicketList({ ticketList, userID }) {
   const [sortBy, setSortBy] = useState("status");
   const [sortedticketList, setSortedticketList] = useState([...ticketList]);
+  const [isModalOpen, setIsModalOpen] = useState({
+    ticketId: "",
+    open: false,
+  });
 
-  
+  const openModal = (ticketId) => {
+    setIsModalOpen({ ticketId: ticketId, open: true });
+  };
+  const closeModal = () =>
+    setIsModalOpen({
+      ticketId: "",
+      open: false,
+    });
+
   useEffect(() => {
     if (ticketList && Array.isArray(ticketList)) {
       const sortedList = [...ticketList].sort((a, b) => {
@@ -20,47 +33,47 @@ export default function TicketList({ ticketList, userID }) {
     }
   }, [ticketList, sortBy]);
 
-  const handleTicketAction = async(ticketId, action) => {
-    try{
-      if(!userID || userID === "") return;
-      console.log("Ticket Action called");
+  const handleTicketAction = async (ticketId, action) => {
+    try {
+      if (!userID || userID === "") return;
 
       const res = await fetch(`/api/tickets/update/${ticketId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userID , action }),
+        body: JSON.stringify({ userID, action }),
       });
 
-      if(res.ok){
+      if (res.ok) {
         setSortedticketList((prevticketList) =>
           prevticketList.map((ticket) =>
-            ticket._id === ticketId ? {
-                ...ticket,
+            ticket._id === ticketId
+              ? {
+                  ...ticket,
                   status: action === "purchase" ? "Sold" : "Available",
                 }
               : ticket
-          ))
-        }
-          else{
-            setSortedticketList(updatedticketList);
-          }
-    }catch(e){
+          )
+        );
+      } else {
+        setSortedticketList(updatedticketList);
+      }
+    } catch (e) {
       console.log(e);
     }
-  }
+  };
 
-  if (!ticketList || ticketList.length === 0)
-    {
-        console.log("TicketList is empty");
-        return <p className="text-sm font-medium">No Tickets yet</p>;
-    }
+  if (!ticketList || ticketList.length === 0) {
+    return <p className="text-sm font-medium">No Tickets yet</p>;
+  }
 
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-gray-600 mt-1">ticketList</h2>
         <div>
-          <label htmlFor="sort" className="text-gray-600 mt-1">Sort By:</label>
+          <label htmlFor="sort" className="text-gray-600 mt-1">
+            Sort By:
+          </label>
           <select
             id="sort"
             value={sortBy}
@@ -79,8 +92,10 @@ export default function TicketList({ ticketList, userID }) {
             key={ticket._id}
             className="text-gray-600 mt-1 rounded shadow-md flex flex-col items-center"
           >
-            <span className="text-lg font-semibold">Seat {ticket.seatNumber}</span>
-            
+            <span className="text-lg font-semibold">
+              Seat {ticket.seatNumber}
+            </span>
+
             <span className="mt-2">${ticket.price}</span>
 
             {/*If The ticket is available and the User doesnt own it "buy" */}
@@ -101,6 +116,16 @@ export default function TicketList({ ticketList, userID }) {
                 Sell
               </button>
             )}
+            {ticket.status !== "Available" && ticket.isOwnedByUser && (
+              <button
+                onClick={() => {
+                  openModal(ticket._id);
+                }}
+                className="mt-4 px-4 py-2 rounded text-white bg-yellow-500"
+              >
+                Transfer
+              </button>
+            )}
             {/*If The ticket is available and the User owns it "cancel sell" */}
             {ticket.status === "Available" && ticket.isOwnedByUser && (
               <button
@@ -118,6 +143,9 @@ export default function TicketList({ ticketList, userID }) {
               >
                 Unavailable
               </button>
+            )}
+            {isModalOpen.open && isModalOpen.ticketId === ticket._id && (
+              <SellTicketModal closeModal={closeModal} ticketId={ticket._id} />
             )}
           </div>
         ))}

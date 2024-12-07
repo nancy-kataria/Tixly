@@ -81,7 +81,6 @@ export default function MyProfile() {
       }
     };
     getTransactions();
-    console.log("Transactions", transactions);
   }, [user, isUserLoading]);
 
   useEffect(() => {
