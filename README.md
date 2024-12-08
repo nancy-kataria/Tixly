@@ -4,6 +4,10 @@
 
 **Tixly** is an event ticket booking app designed to simplify the process of attending live concerts and games. Users can easily browse events, purchase tickets, and even resell their tickets by putting them on sale. Event organizers can create and manage events to sell tickets seamlessly through the platform, ensuring an all-in-one solution for both buyers and sellers.
 
+## Inspiration Behind Tixly
+
+**Tixly** is inspired by **Ticketmaster**, a popular platform for buying and selling event tickets. As part of a web backend school project, Tixly takes ideas from Ticketmaster, like creating events, selling tickets, and letting users resell their tickets. The goal is to build a smaller version that works well, showing how features like managing events, secure payments, and live ticket updates can be done. This project helps understand how backend systems work while creating something simple and useful.
+
 ### Built With
 
 * [![Next.js][Next.js]][Next.js-url]
