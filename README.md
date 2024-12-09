@@ -1,5 +1,8 @@
 # Tixly
 
+<a id="readme-top"></a>
+[![LinkedIn][linkedin-shield]][linkedin-url]
+
 ## Event Ticket Booking App
 
 **Tixly** is an event ticket booking app designed to simplify the process of attending live concerts and games. Users can easily browse events, purchase tickets, and even resell their tickets by putting them on sale. Event organizers can create and manage events to sell tickets seamlessly through the platform, ensuring an all-in-one solution for both buyers and sellers.
@@ -50,6 +53,8 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
