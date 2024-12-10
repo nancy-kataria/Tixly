@@ -22,8 +22,9 @@ function VenueListModal({
                 venue: venue._id,
               });
               setSelectedVenue(venue);
+              closeModal();
             }}
-            className="w-full max-w-lg p-4 bg-white border border-gray-300 rounded-lg shadow-md flex items-center space-x-4"
+            className="w-full max-w-lg p-4 bg-white border border-gray-300 rounded-lg shadow-md flex items-center space-x-4 my-2"
           >
             {/* venue Details */}
             <div>
