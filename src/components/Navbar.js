@@ -60,10 +60,10 @@ export default function Navbar() {
         }
 
         {user ? (
-           <button
+           <p
            onClick={() => handleSignOut()}
-           className="hover:underline bg-transparent border-none"
-         > Sign Out</button>
+           className="cursor-pointer hover:underline"
+         > Sign Out</p>
         ) : (
           <Link href="login" passHref>
             <div className="cursor-pointer hover:underline">Sign In</div>
@@ -80,7 +80,7 @@ export default function Navbar() {
             }}
             passHref
           >
-            <div className="relative w-10 h-10">
+            <div className="relative w-8 h-8">
               <Image
                 src={avatar}
                 alt="avatar"
