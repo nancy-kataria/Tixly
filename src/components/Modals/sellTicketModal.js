@@ -3,10 +3,9 @@ import React, { useState } from "react";
 function SellTicketModal({ closeModal, ticketId }) {
   const [email, setEmail] = useState("");
 
-  //   Does the task but goes into a promise
-  const handleTicketTransfer = () => {
+  const handleTicketTransfer = async () => {
     try {
-      const response = fetch(`/api/ticketOwnership/update/${ticketId}`, {
+      const response = await fetch(`/api/ticketOwnership/update/${ticketId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userEmail: email }),
@@ -15,6 +14,7 @@ function SellTicketModal({ closeModal, ticketId }) {
       if (response.ok) {
         alert("Ticket Transfered");
         closeModal();
+        window.location.reload();
       }
     } catch (error) {
       console.log(error.message);
