@@ -42,7 +42,7 @@ export default function HomePage() {
         style={{ padding: "2rem", textAlign: "center" }}
         className="min-h-screen bg-gray-100"
       >
-        <h2 className="text-4xl font-bold text-gray-800 mb-8">
+        <h2 className="text-4xl font-bold text-gray-800 mb-4">
           Welcome to Tixly!
         </h2>
         {/* Search Bar */}
@@ -51,9 +51,10 @@ export default function HomePage() {
           placeholder="Search for events..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          style={{ padding: "0.5rem", width: "60%", marginRight: "0.5rem" }}
+          className="rounded"
+          style={{ padding: "0.5rem", width: "60%", margin: "1.5rem 1rem" }}
         />
-        <button onClick={handleSearch} style={{ padding: "0.5rem 1rem" }}>
+        <button onClick={handleSearch} className="bg-black text-white rounded" style={{ padding: "0.5rem 1rem" }}>
           Search
         </button>
         {/* Display search results */}
