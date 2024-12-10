@@ -25,6 +25,9 @@ export default function MyProfile() {
   const [loading, setLoading] = useState(true);
   const [transactions, setTransactions] = useState([]);
 
+  // using multiple useEffect hooks in one component. This allows you to separate unrelated logic into distinct
+  // effects, making your code easier to understand and test.
+
   //Organizer Events
   useEffect(() => {
     if (router && !router.isReady) {

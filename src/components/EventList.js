@@ -7,7 +7,6 @@ import Image from "next/image";
 export default function EventList({ eventList }) {
   const router = useRouter();
   if (!eventList || eventList.length === 0) {
-    console.log("Eventlist is empty");
     return <p className="text-sm font-medium">No events yet</p>;
   }
 
