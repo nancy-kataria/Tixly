@@ -32,10 +32,11 @@ function SellTicketModal({ closeModal, ticketId }) {
           onChange={(e) => setEmail(e.target.value)}
           className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-400"
         />
-        <div className="flex justify-end space-x-4">
+        <div className="flex justify-end space-x-4 my-4">
           <button
+            disabled={!email}
             onClick={handleTicketTransfer}
-            className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+            className="px-4 py-2 bg-black text-white rounded"
           >
             Tranfer
           </button>
