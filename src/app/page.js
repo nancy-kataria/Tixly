@@ -40,11 +40,12 @@ export default function HomePage() {
     <>
       <div
         style={{ padding: "2rem", textAlign: "center" }}
-        className="min-h-screen bg-gray-100"
+        className="min-h-screen bg-gray-100 text-gray-800"
       >
         <h2 className="text-4xl font-bold text-gray-800 mb-4">
           Welcome to Tixly!
         </h2>
+        <p>Shop Hundreds Of Live Events And Discover Can't-Miss Concerts, Games, Theater And More.</p>
         {/* Search Bar */}
         <input
           type="text"

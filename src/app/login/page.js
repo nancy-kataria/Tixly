@@ -46,64 +46,71 @@ export default function LoginPage() {
   };
 
   return (
-    <>
-      <div className="flex flex-col items-center justify-center min-h-screen p-8 bg-gray-100">
-        <div className="w-full max-w-md p-6 space-y-6 bg-white rounded-lg shadow-md">
-          <h1 className="text-2xl font-semibold text-center text-gray-700">
-            {isLogin ? "Sign In" : "Sign Up"}
-          </h1>
-
-          {/* Sign in and Sign up Forms */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
-              <>
-                <input
-                  type="text"
-                  placeholder="Name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-400"
-                />
-                <select
-                  value={userType}
-                  onChange={(e) => setUserType(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-400"
-                >
-                  <option value="User">User</option>
-                  <option value="Organizer">Organizer</option>
-                </select>
-              </>
-            )}
-            <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-400"
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-400"
-            />
-            <button
-              type="submit"
-              className="w-full py-2 mt-4 font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600"
-            >
-              {isLogin ? "Sign In" : "Sign Up"}
-            </button>
-          </form>
-
-          <button
-            onClick={() => setIsLogin(!isLogin)}
-            className="w-full mt-4 text-sm font-medium text-blue-500 hover:underline"
-          >
-            {isLogin ? "Create an account" : "Have an account? Login"}
-          </button>
-        </div>
+    <div className="flex items-center justify-center min-h-screen p-8 bg-gray-100 text-gray-800">
+      <div className="mx-8">
+        <h2 className="text-4xl font-bold text-gray-800 mb-4">
+          Welcome to Tixly!
+        </h2>
+        <p>
+          Shop Hundreds Of Live Events And Discover Can't-Miss Concerts, Games,
+          Theater And More.
+        </p>
       </div>
-    </>
+      <div className="w-full max-w-md p-6 space-y-6 bg-white rounded-lg shadow-md">
+        <h1 className="text-2xl font-semibold text-center text-gray-700">
+          {isLogin ? "Sign In" : "Sign Up"}
+        </h1>
+
+        {/* Sign in and Sign up Forms */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {!isLogin && (
+            <>
+              <input
+                type="text"
+                placeholder="Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-400"
+              />
+              <select
+                value={userType}
+                onChange={(e) => setUserType(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-400"
+              >
+                <option value="User">User</option>
+                <option value="Organizer">Organizer</option>
+              </select>
+            </>
+          )}
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-400"
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-400"
+          />
+          <button
+            type="submit"
+            className="w-full py-2 mt-4 font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600"
+          >
+            {isLogin ? "Sign In" : "Sign Up"}
+          </button>
+        </form>
+
+        <button
+          onClick={() => setIsLogin(!isLogin)}
+          className="w-full mt-4 text-sm font-medium text-blue-500 hover:underline"
+        >
+          {isLogin ? "Create an account" : "Have an account? Login"}
+        </button>
+      </div>
+    </div>
   );
 }
