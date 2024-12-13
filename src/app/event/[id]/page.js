@@ -120,16 +120,16 @@ export default function EventPage({ params }) {
           {!boxOpen ? (
             <button
               onClick={getGenAIresponse}
-              className="px-4 py-2 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600 focus:outline-none"
+              className="px-4 py-2 bg-black text-white font-semibold rounded hover:bg-gray-800 focus:outline-none"
             >
               Click to know more
             </button>
           ) : (
-            <div className="mt-4 max-w-sm mx-auto p-6 bg-blue-100 rounded-lg shadow-md">
-              <h2 className="text-xl font-semibold text-blue-900 mb-2">
+            <div className="mt-4 max-w-sm mx-auto p-6 bg-gray-800 rounded-lg shadow-md">
+              <h2 className="text-xl font-semibold text-white-900 mb-2">
                 Did you know..
               </h2>
-              <p className="text-gray-700">{response}</p>
+              <p className="text-white-700">{response}</p>
             </div>
           )}
         </div>
