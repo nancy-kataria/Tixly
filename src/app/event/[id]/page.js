@@ -72,8 +72,8 @@ export default function EventPage({ params }) {
 
   const date = new Date(event?.event?.eventDate);
   return (
-    <>
-      <div className="flex flex-col items-center min-h-screen bg-gray-100 p-8">
+    <div>
+      <div className="flex items-center bg-gray-100 p-8">
         {/* Event Image */}
         <div className="w-full max-w-2xl">
           <Image
@@ -108,7 +108,8 @@ export default function EventPage({ params }) {
             {date?.toLocaleDateString("en-US")}
           </p>
         </div>
-
+      </div>
+      <div className="flex space-x-20 min-h-screen bg-gray-100 p-8">
         {event.tickets && Array.isArray(event.tickets) ? (
           <TicketList ticketList={event.tickets} userID={user?.id} />
         ) : (
@@ -121,18 +122,18 @@ export default function EventPage({ params }) {
               onClick={getGenAIresponse}
               className="px-4 py-2 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600 focus:outline-none"
             >
-              Click to know more about the artist
+              Click to know more
             </button>
           ) : (
             <div className="mt-4 max-w-sm mx-auto p-6 bg-blue-100 rounded-lg shadow-md">
               <h2 className="text-xl font-semibold text-blue-900 mb-2">
-                Do you know..
+                Did you know..
               </h2>
               <p className="text-gray-700">{response}</p>
             </div>
           )}
         </div>
       </div>
-    </>
+    </div>
   );
 }
