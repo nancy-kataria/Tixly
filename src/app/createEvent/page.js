@@ -161,7 +161,7 @@ export default function CreateEvent() {
           )}
           <button
             onClick={openModal}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
           >
             Click to select a Venue
           </button>
@@ -215,7 +215,7 @@ export default function CreateEvent() {
           </div>
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full bg-black text-white font-semibold py-2 px-4 rounded-md hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             Add Event
           </button>
