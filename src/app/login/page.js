@@ -98,7 +98,8 @@ export default function LoginPage() {
           />
           <button
             type="submit"
-            className="w-full py-2 mt-4 font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600"
+            disabled={!email && !password}
+            className="w-full py-2 mt-4 font-medium text-white bg-black rounded-md hover:bg-black-600"
           >
             {isLogin ? "Sign In" : "Sign Up"}
           </button>
@@ -106,7 +107,7 @@ export default function LoginPage() {
 
         <button
           onClick={() => setIsLogin(!isLogin)}
-          className="w-full mt-4 text-sm font-medium text-blue-500 hover:underline"
+          className="w-full mt-4 text-sm font-medium text-black-500 hover:underline"
         >
           {isLogin ? "Create an account" : "Have an account? Login"}
         </button>
