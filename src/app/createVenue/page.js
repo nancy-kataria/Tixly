@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useState } from "react";
 
 function page() {
@@ -102,6 +103,13 @@ function page() {
           Add Venue
         </button>
       </form>
+
+      <p className="py-2 text-black">
+          Want to create an event now?
+        </p>
+        <Link href="createEvent">
+          <p className="text-black underline">Add Event</p>
+        </Link>
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/compat/router";
 import { useUser } from "@/context/UserContext";
 import VenueListModal from "@/components/Modals/venueListModal";
+import Link from "next/link";
 
 export default function CreateEvent() {
   const { user, isLoading: isUserLoading } = useUser();
@@ -219,6 +220,13 @@ export default function CreateEvent() {
             Add Event
           </button>
         </form>
+
+        <p className="py-2 text-black">
+          Couldn't find your desired venue in the list?
+        </p>
+        <Link href="createVenue">
+          <p className="text-black underline">Add Venue</p>
+        </Link>
       </div>
 
       {isModalOpen && (
