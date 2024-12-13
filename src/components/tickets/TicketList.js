@@ -86,7 +86,7 @@ export default function TicketList({ ticketList, userID }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-8 gap-4">
         {sortedticketList.map((ticket) => (
           <div
             key={ticket._id}
