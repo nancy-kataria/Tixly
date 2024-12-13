@@ -31,7 +31,7 @@ export async function GET(req, {params}) {
 
             const ticket = event?.tickets.find((t) => t._id.toString() === ownership.ticket.toString());
             return {
-              eventId: event?._id,
+              eventID: event?._id,
               eventName: event?.eventName,
               eventDate: event?.eventDate,
               _id: ticket?._id,

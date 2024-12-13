@@ -18,7 +18,7 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const url = isLogin ? "/api/auth/signin" : "/api/auth/signup";
+    const url = isLogin ? "/api/auth/signIn" : "/api/auth/signUp";
     const body = isLogin
       ? { email, password }
       : { name, email, password, userType };
@@ -32,7 +32,11 @@ export default function LoginPage() {
 
     console.log(res);
 
-    if (!res.ok) return;
+    if (!res.ok) 
+    {
+      alert("Invalid email or password")
+      return
+    };
     const data = await res.json();
 
     if (res.error) {

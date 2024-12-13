@@ -26,8 +26,6 @@ export default function MyProfile() {
   const [transactions, setTransactions] = useState([]);
 
   // using multiple useEffect hooks in one component. This allows you to separate unrelated logic into distinct
-  // effects, making your code easier to understand and test.
-
   //Organizer Events
   useEffect(() => {
     if (router && !router.isReady) {
@@ -120,8 +118,9 @@ export default function MyProfile() {
         <EventList eventList={eventList}></EventList>
 
         <h3 className="text-2xl font-bold">Your Ticket List</h3>
-        <TicketList ticketList={ticketList} userID={user?.id}></TicketList>
+        <TicketList ticketList={ticketList} userID={user?.id} viewType="user"></TicketList>
 
+        {/*Transaction List */}
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-gray-600 mt-1">Transaction List</h2>
 
