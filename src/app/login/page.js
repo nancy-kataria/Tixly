@@ -18,7 +18,7 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const url = isLogin ? "/api/auth/signIn" : "/api/auth/signUp";
+    const url = isLogin ? "/api/auth/signin" : "/api/auth/signup";
     const body = isLogin
       ? { email, password }
       : { name, email, password, userType };
