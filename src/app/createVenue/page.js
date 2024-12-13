@@ -107,7 +107,7 @@ function page() {
       <p className="py-2 text-black">
           Want to create an event now?
         </p>
-        <Link href="createEvent">
+        <Link href="/createEvent">
           <p className="text-black underline">Add Event</p>
         </Link>
     </div>

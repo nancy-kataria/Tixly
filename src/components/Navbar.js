@@ -65,7 +65,7 @@ export default function Navbar() {
            className="cursor-pointer hover:underline"
          > Sign Out</p>
         ) : (
-          <Link href="login" passHref>
+          <Link href="/login" passHref>
             <div className="cursor-pointer hover:underline">Sign In</div>
           </Link>
         )}

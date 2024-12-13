@@ -224,7 +224,7 @@ export default function CreateEvent() {
         <p className="py-2 text-black">
           Couldn't find your desired venue in the list?
         </p>
-        <Link href="createVenue">
+        <Link href="/createVenue">
           <p className="text-black underline">Add Venue</p>
         </Link>
       </div>
