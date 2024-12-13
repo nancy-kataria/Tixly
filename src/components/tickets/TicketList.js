@@ -69,7 +69,7 @@ export default function TicketList({ ticketList, userID }) {
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-gray-600 mt-1">ticketList</h2>
+        <h2 className="text-gray-800 mt-1 text-xl font-bold">Select Tickets</h2>
         <div>
           <label htmlFor="sort" className="text-gray-600 mt-1">
             Sort By:
