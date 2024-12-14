@@ -110,7 +110,7 @@ export default function MyProfile() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="text-gray-800">
+      <div className="text-gray-800 mx-4">
         <h3 className="text-2xl font-bold py-4">{user.userType}</h3>
         <p className="text-lg font-medium">{user.name}</p>
         <h3 className="text-2xl font-bold py-4">Your Event List</h3>
