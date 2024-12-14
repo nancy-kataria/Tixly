@@ -9,7 +9,7 @@ function VenueListModal({
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full text-gray-800 h-100 overflow-y-scroll">
+      <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full text-gray-800 h-80 overflow-y-scroll">
         <h2 className="text-xl font-semibold mb-4">
           Select a Venue for your event
         </h2>
