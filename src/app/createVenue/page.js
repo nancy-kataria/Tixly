@@ -34,7 +34,7 @@ function page() {
   };
 
   return (
-    <div className="max-w-lg mx-auto mt-10 bg-white p-8 rounded-lg shadow-md">
+    <div className="max-w-lg mx-auto my-10 bg-white p-8 rounded-lg shadow-md">
       <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">
         Add Venue
       </h2>

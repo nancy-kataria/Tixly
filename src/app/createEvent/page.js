@@ -64,7 +64,7 @@ export default function CreateEvent() {
 
   return (
     <>
-      <div className="max-w-lg mx-auto mt-10 bg-white p-8 rounded-lg shadow-md">
+      <div className="max-w-lg mx-auto my-10 bg-white p-8 rounded-lg shadow-md">
         <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">
           Add Event
         </h2>
@@ -84,7 +84,7 @@ export default function CreateEvent() {
               onChange={handleFormDataChange}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-400"
-              placeholder="Enter event name"
+              placeholder="Enter Event name"
             />
           </div>
 
