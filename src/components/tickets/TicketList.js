@@ -113,7 +113,7 @@ const handleTicketAction = async (ticketId, action) => {
             {eventTickets.map((ticket) => (
               <div
                 key={ticket._id}
-                className="text-gray-600 mt-1 rounded shadow-md flex flex-col items-center"
+                className="text-gray-600 mt-1 rounded shadow-md flex flex-col items-center p-2"
               >
                 <span className="text-lg font-semibold">
                   Seat {ticket.seatNumber}
