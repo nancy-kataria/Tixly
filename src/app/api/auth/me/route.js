@@ -14,8 +14,6 @@ export async function GET(req) {
         return new Response(JSON.stringify({error:e}, { status: 401 }));
     }
 
-    
-    console.log("Getting User Cookie");
     const cookieStore = cookies();
     const token = (await cookieStore).get("token")?.value;
 

@@ -2,6 +2,8 @@
 import connectDB from '@/lib/mongooseDB';
 import User from '@/models/Users';
 
+// Get user details
+
 export async function GET(request, {params}) {
   try {
 

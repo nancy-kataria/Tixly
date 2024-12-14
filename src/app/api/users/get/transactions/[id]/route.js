@@ -1,7 +1,7 @@
 import connectDB from "@/lib/mongooseDB";
 import User from "@/models/Users";
 
-
+//  Get All Transactions for a User
 export async function GET(req, {params}) {
     try {
         await connectDB();
@@ -13,7 +13,6 @@ export async function GET(req, {params}) {
         const transactions = await User.findById(userID).select("transactions");
         if(!transactions)  return new Response(JSON.stringify({ error: "No Transactions found" }), { status: 404 });
 
-        console.log(JSON.stringify(transactions));
         return new Response(JSON.stringify(transactions), { status: 200 });
 
     }catch (error) {

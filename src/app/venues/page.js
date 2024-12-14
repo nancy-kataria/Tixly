@@ -80,23 +80,6 @@ export default function VenueTesting() {
     }
   };
 
-  // const getRequest = async (e) => {
-  //   e.preventDefault();
-  //   console.log("Event get request");
-
-  //   try {
-  //     const url = `/api/events/get/eventID/${_id}`;
-  //     const res = await fetch(url, { method: `GET` });
-  //     const data = await res.json();
-  //     if (res.ok) {
-  //       alert("Data retrieved successfully!");
-  //       setJsonData(data);
-  //     } else alert(data.error || "Error fetching data");
-  //   } catch (e) {
-  //     console.error(e);
-  //   }
-  // };
-
   return (
     <>
       <Navbar router={router} />

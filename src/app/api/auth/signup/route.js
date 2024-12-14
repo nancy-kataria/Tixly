@@ -14,7 +14,6 @@ export async function POST(req) {
       password: hashedPassword,
       userType,
     });
-    console.log(JSON.stringify(user));
     await user.save();
     const { token, headers } = await createUserCookie(user);
 

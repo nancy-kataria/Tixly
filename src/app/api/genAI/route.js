@@ -1,8 +1,8 @@
-// File: /app/api/chat/route.js
 export async function POST(req) {
     try {
       const { prompt } = await req.json();
-  
+
+      // fetching response from GenAI
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -10,7 +10,7 @@ export async function POST(req) {
           Authorization: `Bearer ${process.env.OPEN_AI_API_KEY}`,
         },
         body: JSON.stringify({
-          model: 'gpt-3.5-turbo',  // Replace with the correct model if needed
+          model: 'gpt-3.5-turbo',
           messages: [{ role: 'user', content: prompt }],
         }),
       });

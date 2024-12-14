@@ -19,7 +19,6 @@ export  function POST() {
 
   }
   catch(e){
-    console.log(JSON.stringify(e));
     return new Response(JSON.stringify({ message: "could not log out" }), {
       status: 401,
       headers: {

@@ -14,7 +14,6 @@ export async function authenticate() {
 
     const secret = new TextEncoder().encode(process.env.JWT_SECRET);
     const { payload } = await jwtVerify(token, secret);
-    console.log(JSON.stringify(payload));
     return payload;
 
   } catch (e) {

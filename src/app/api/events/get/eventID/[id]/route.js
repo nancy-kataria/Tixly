@@ -25,7 +25,6 @@ export async function GET(req, {params}) {
       if(userID && userID !="") {
         //find tickets user owns
         const ownershipDetails = await TicketOwnership.find({eventID});
-        //console.log(JSON.stringify(ownershipDetails));
 
         tickets = tickets.map((ticket)=> {
           const ownership = ownershipDetails.find((o)=> o.ticket.toString() === ticket._id.toString());
@@ -36,7 +35,6 @@ export async function GET(req, {params}) {
           }
         });
       }
-      //console.log(JSON.stringify(tickets));
       return new Response(JSON.stringify({event, tickets}), { status: 201 });
     } catch (error) {
         console.log(error);
