@@ -111,18 +111,24 @@ export default function MyProfile() {
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="text-gray-800">
-        <h3 className="text-2xl font-bold">{user.userType}</h3>
+        <h3 className="text-2xl font-bold py-4">{user.userType}</h3>
         <p className="text-lg font-medium">{user.name}</p>
-        <h3 className="text-2xl font-bold">Your Event List</h3>
+        <h3 className="text-2xl font-bold py-4">Your Event List</h3>
 
         <EventList eventList={eventList}></EventList>
 
-        <h3 className="text-2xl font-bold">Your Ticket List</h3>
-        <TicketList ticketList={ticketList} userID={user?.id} viewType="user"></TicketList>
+        <h3 className="text-2xl font-bold py-4">Your Ticket List</h3>
+        <TicketList
+          ticketList={ticketList}
+          userID={user?.id}
+          viewType="user"
+        ></TicketList>
 
         {/*Transaction List */}
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-gray-600 mt-1">Transaction List</h2>
+          <h2 className="text-2xl font-bold text-gray-600 mt-1">
+            Transaction List
+          </h2>
 
           <div className="grid grid-cols-3 gap-4">
             {transactions.map((transaction) => (
@@ -156,6 +162,7 @@ export default function MyProfile() {
             ))}
           </div>
         </div>
+        {transactions.length == 0 && <p>No Transactions to show</p>}
       </div>
     </div>
   );
