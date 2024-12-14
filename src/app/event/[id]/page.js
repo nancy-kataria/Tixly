@@ -109,14 +109,16 @@ export default function EventPage({ params }) {
           </p>
         </div>
       </div>
-      <div className="flex space-x-20 min-h-screen bg-gray-100 p-8">
+      <div className="flex space-x-8 min-h-screen bg-gray-100 p-8">
+        <div className="flex-[0_0_70%]">
         {event.tickets && Array.isArray(event.tickets) ? (
           <TicketList ticketList={event.tickets} userID={user?.id} />
         ) : (
           <p>Loading Tickets</p>
         )}
+        </div>
 
-        <div className="text-center">
+        <div className="flex-[0_0_30%] text-center">
           {!boxOpen ? (
             <button
               onClick={getGenAIresponse}
