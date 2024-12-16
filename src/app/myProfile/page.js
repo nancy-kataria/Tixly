@@ -125,19 +125,21 @@ export default function MyProfile() {
         ></TicketList>
 
         {/*Transaction List */}
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold text-gray-600 mt-1">
-            Transaction List
-          </h2>
 
+        <h2 className="text-2xl font-bold text-gray-600 mt-1">
+          Transaction List
+        </h2>
+
+        <div className="flex justify-between items-center mb-4">
           <div className="grid grid-cols-3 gap-4">
             {transactions.map((transaction) => (
               <div
                 key={transaction._id}
-                className="text-gray-600 mt-1 rounded shadow-md flex flex-col items-center"
+                className="text-gray-600 mt-1 rounded shadow-md flex flex-col p-2"
               >
                 <span className="mt-2">
-                  Transaction Date: {transaction?.transactionDate}
+                  Transaction Date:{" "}
+                  {new Date(transaction?.transactionDate).toLocaleDateString()}
                 </span>
                 <span className="mt-2">
                   Transaction Type: {transaction?.transactionType}

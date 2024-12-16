@@ -21,7 +21,7 @@ export default function TicketList({ ticketList, userID, viewType = "event" }) {
       ticketId: "",
       open: false,
     });
-//Sorts the Tickets
+  //Sorts the Tickets
   useEffect(() => {
     if (ticketList && Array.isArray(ticketList)) {
       const sortedList = [...ticketList].sort((a, b) => {
@@ -34,51 +34,49 @@ export default function TicketList({ ticketList, userID, viewType = "event" }) {
     }
   }, [ticketList, sortBy]);
 
-//Groups tickets by the event
-const ticketsByEvent = viewType === "user"
-? sortedticketList.reduce((acc, ticket) => {
-    if (!acc[ticket.eventID]) {
-      acc[ticket.eventID] = [];
+  //Groups tickets by the event
+  const ticketsByEvent =
+    viewType === "user"
+      ? sortedticketList.reduce((acc, ticket) => {
+          if (!acc[ticket.eventID]) {
+            acc[ticket.eventID] = [];
+          }
+          acc[ticket.eventID].push(ticket);
+          return acc;
+        }, {})
+      : { "All Tickets": sortedticketList };
+
+  const handleTicketAction = async (ticketId, action) => {
+    try {
+      if (!userID || userID === "") return;
+
+      const res = await fetch(`/api/tickets/update/${ticketId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userID, action }),
+      });
+
+      if (res.ok) {
+        setSortedticketList((prevTicketList) =>
+          prevTicketList.map((ticket) =>
+            ticket._id === ticketId
+              ? {
+                  ...ticket,
+                  status: action === "purchase" ? "Sold" : "Available",
+                }
+              : ticket
+          )
+        );
+      } else {
+        console.error("Failed to update ticket");
+      }
+    } catch (e) {
+      console.error(e);
     }
-    acc[ticket.eventID].push(ticket);
-    return acc;
-  }, {})
-: { "All Tickets": sortedticketList };
-
-
-
-const handleTicketAction = async (ticketId, action) => {
-  try {
-    if (!userID || userID === "") return;
-
-    const res = await fetch(`/api/tickets/update/${ticketId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userID, action }),
-    });
-
-    if (res.ok) {
-      setSortedticketList((prevTicketList) =>
-        prevTicketList.map((ticket) =>
-          ticket._id === ticketId
-            ? {
-                ...ticket,
-                status: action === "purchase" ? "Sold" : "Available",
-              }
-            : ticket
-        )
-      );
-    } else {
-      console.error("Failed to update ticket");
-    }
-  } catch (e) {
-    console.error(e);
-  }
-};
+  };
   if (!ticketList || ticketList.length === 0) {
     return <p className="text-sm font-medium">No Tickets yet</p>;
   }
-
 
   return (
     <div>
@@ -108,8 +106,8 @@ const handleTicketAction = async (ticketId, action) => {
                 View Event: {eventID}
               </button>
             </Link>
-        )}
-          <div className="grid grid-cols-8 gap-4">
+          )}
+          <div className="grid grid-cols-8 gap-4" key={Math.random()}>
             {eventTickets.map((ticket) => (
               <div
                 key={ticket._id}
@@ -167,7 +165,10 @@ const handleTicketAction = async (ticketId, action) => {
                   </button>
                 )}
                 {isModalOpen.open && isModalOpen.ticketId === ticket._id && (
-                  <SellTicketModal closeModal={closeModal} ticketId={ticket._id} />
+                  <SellTicketModal
+                    closeModal={closeModal}
+                    ticketId={ticket._id}
+                  />
                 )}
               </div>
             ))}
