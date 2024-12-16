@@ -5,7 +5,7 @@
 
 ## Event Ticket Booking App
 
-**Tixly** is an event ticket booking app designed to simplify the process of attending live concerts and games. Users can easily browse events, purchase tickets, and even resell their tickets by putting them on sale. Event organizers can create and manage events to sell tickets seamlessly through the platform, ensuring an all-in-one solution for both buyers and sellers.
+**Tixly** is an event ticket booking app designed to simplify the process of attending live concerts and games. Users can easily browse events, and checks the list of events present, purchase tickets, and even resell their tickets by putting them on sale. Event organizers can create and manage events to sell tickets seamlessly through the platform, ensuring an all-in-one solution for both buyers and sellers.
 
 ## Inspiration Behind Tixly
 
@@ -35,7 +35,7 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+You can start editing the page by modifying `app/page.js`. The page will auto-updates when you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
@@ -46,7 +46,7 @@ To learn more about Next.js, take a look at the following resources:
 - [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
 - [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - We welcome contributions! Please fork the repository and create a pull request with your changes. Ensure that your code follows the project's coding standards and passes all tests. 
 
 ## Deploy on Vercel
 
