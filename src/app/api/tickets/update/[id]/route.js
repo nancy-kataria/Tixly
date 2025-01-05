@@ -113,7 +113,6 @@ export async function PUT(request, {params}) {
         {
              buyer = await buyerQuery.exec();
              seller = await sellerQuery.exec();
-             console.log(JSON.stringify(buyer));
         }
         //Commit
         await session.commitTransaction();
