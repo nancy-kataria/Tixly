@@ -45,7 +45,7 @@ export default function HomePage() {
         <h2 className="text-4xl font-bold text-gray-800 mb-4">
           Welcome to Tixly!
         </h2>
-        <p>Shop Hundreds Of Live Events And Discover Can't-Miss Concerts, Games, Theater And More.</p>
+        <p>Shop Hundreds Of Live Events And Discover Can&apos;t-Miss Concerts, Games, Theater And More.</p>
         {/* Search Bar */}
         <input
           type="text"

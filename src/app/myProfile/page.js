@@ -44,7 +44,7 @@ export default function MyProfile() {
       }
     };
     getEventsOwnedbyOrganizer();
-  }, [user, isUserLoading]);
+  }, [user, isUserLoading, router]);
 
   //TicketList
   useEffect(() => {

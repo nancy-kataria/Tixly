@@ -56,7 +56,7 @@ export default function LoginPage() {
           Welcome to Tixly!
         </h2>
         <p>
-          Shop Hundreds Of Live Events And Discover Can't-Miss Concerts, Games,
+          Shop Hundreds Of Live Events And Discover Can&apos;t-Miss Concerts, Games,
           Theater And More.
         </p>
       </div>
