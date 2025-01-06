@@ -21,6 +21,8 @@ export default function EventPage({ params }) {
   const [response, setResponse] = useState("");
   const [boxOpen, setBoxOpen] = useState(false);
 
+  // Calling APU for Gen AI Response
+  // Gives details for artist
   const getGenAIresponse = async () => {
     try {
       const res = await fetch("/api/genAI", {
@@ -35,8 +37,7 @@ export default function EventPage({ params }) {
       console.error("Error:", error);
       setResponse("Error fetching response");
     }
-
-    setBoxOpen(true);
+    setBoxOpen(true)
   };
 
   useEffect(() => {
@@ -54,7 +55,7 @@ export default function EventPage({ params }) {
         if (res.ok) {
           setEvent(data);
           //sort ticket list
-          setSortedTickets([...data.tickets]); //.sort((a,b)=>a[sortBy].localCompare(b[sortBy])));
+          setSortedTickets([...data.tickets]);
 
           if (data?.event?.eventArtist) {
             setPromptInput(
@@ -109,13 +110,15 @@ export default function EventPage({ params }) {
           </p>
         </div>
       </div>
+
+      {/* Ticket List Container */}
       <div className="flex space-x-8 min-h-screen bg-gray-100 p-8">
         <div className="flex-[0_0_70%]">
-        {event.tickets && Array.isArray(event.tickets) ? (
-          <TicketList ticketList={event.tickets} userID={user?.id} />
-        ) : (
-          <p>Loading Tickets</p>
-        )}
+          {event.tickets && Array.isArray(event.tickets) ? (
+            <TicketList ticketList={event.tickets} userID={user?.id} />
+          ) : (
+            <p>Loading Tickets</p>
+          )}
         </div>
 
         <div className="flex-[0_0_30%] text-center">
