@@ -2,13 +2,20 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-export default function GoogleSignInButton() {
+// next: optional path to land on after sign-in (defaults to the home page).
+export default function GoogleSignInButton({ next }) {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [error, setError] = useState("");
 
   const handleSignIn = async () => {
     setIsRedirecting(true);
     setError("");
+    // Remember where to go after sign-in. /auth/callback reads this cookie.
+    // Using a cookie keeps the redirect URL free of query params, which
+    // Supabase's Redirect URLs allow-list would otherwise have to match.
+    if (next) {
+      document.cookie = `auth_next=${encodeURIComponent(next)}; path=/; max-age=600; samesite=lax`;
+    }
     const supabase = createClient();
     // Sends the browser to Google; it comes back via /auth/callback.
     const { error } = await supabase.auth.signInWithOAuth({

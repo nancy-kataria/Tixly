@@ -31,9 +31,13 @@ export default function Navbar() {
           <div className="cursor-pointer hover:underline">Explore</div>
         </Link>
 
-        {user?.role === "organizer" && (
+        {user?.role === "organizer" ? (
             <Link href="/createEvent" passHref>
               <div className="cursor-pointer hover:underline">Create Event</div>
+            </Link>
+          ) : (
+            <Link href="/organizers" passHref>
+              <div className="cursor-pointer hover:underline">For organizers</div>
             </Link>
           )
         }

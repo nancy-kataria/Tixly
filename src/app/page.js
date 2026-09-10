@@ -1,66 +1,49 @@
-"use client";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import EventList from "@/components/EventList";
-import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
 
-export default function HomePage() {
-  const router = useRouter();
-  const [query, setQuery] = useState("");
-  const [eventList, setEventList] = useState([]);
+export default async function HomePage({ searchParams }) {
+  const { q = "" } = await searchParams;
+  const search = q.trim();
 
-  const handleSearch = async () => {
-    let url = `/api/events/get/eventList`;
-    if (query) {
-      url = `/api/events/get/eventList?eventName=${query}`;
-    }
-    const res = await fetch(url);
-    const data = await res.json();
-    setEventList(data);
-  };
+  const supabase = await createClient();
+  let query = supabase
+    .from("events")
+    .select("id, name, category, starts_at, venue:venues(name)")
+    .gte("starts_at", new Date().toISOString())
+    .order("starts_at");
+  if (search) query = query.ilike("name", `%${search}%`);
 
-  useEffect(() => {
-    const getRequest = async () => {
-      try {
-        const url = `/api/events/get/eventList`;
-        const res = await fetch(url, { method: `GET` });
-        const data = await res.json();
-        if (res.ok) {
-          setEventList(data);
-        } else setEventList([]);
-      } catch (e) {
-        console.error(e);
-      }
-    };
-
-    getRequest();
-  }, []);
+  const { data: events, error } = await query;
+  if (error) console.error("Failed to load events:", error);
 
   return (
-    <>
-      <div
-        style={{ padding: "2rem", textAlign: "center" }}
-        className="min-h-screen bg-gray-100 text-gray-800"
-      >
-        <h2 className="text-4xl font-bold text-gray-800 mb-4">
-          Welcome to Tixly!
-        </h2>
-        <p>Shop Hundreds Of Live Events And Discover Can&apos;t-Miss Concerts, Games, Theater And More.</p>
-        {/* Search Bar */}
+    <div
+      style={{ padding: "2rem", textAlign: "center" }}
+      className="min-h-screen bg-gray-100 text-gray-800"
+    >
+      <h2 className="text-4xl font-bold text-gray-800 mb-4">
+        Welcome to Tixly!
+      </h2>
+      <p>Shop Hundreds Of Live Events And Discover Can&apos;t-Miss Concerts, Games, Theater And More.</p>
+      {/* Search Bar: a plain GET form, so results live in the URL (?q=...) */}
+      <form action="/">
         <input
-          type="text"
+          type="search"
+          name="q"
+          defaultValue={search}
           placeholder="Search for events..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
           className="rounded"
           style={{ padding: "0.5rem", width: "60%", margin: "1.5rem 1rem" }}
         />
-        <button onClick={handleSearch} className="bg-black text-white rounded" style={{ padding: "0.5rem 1rem" }}>
+        <button type="submit" className="bg-black text-white rounded" style={{ padding: "0.5rem 1rem" }}>
           Search
         </button>
-        {/* Display search results */}
-        <EventList eventList={eventList}></EventList>
-      </div>
-    </>
+      </form>
+      {/* Display search results */}
+      <EventList
+        events={events ?? []}
+        emptyMessage={search ? `No upcoming events match "${search}"` : "No upcoming events yet"}
+      />
+    </div>
   );
 }

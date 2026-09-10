@@ -1,12 +1,6 @@
 import React from "react";
 
-function VenueListModal({
-  venueList,
-  setFormData,
-  formData,
-  closeModal,
-  setSelectedVenue,
-}) {
+function VenueListModal({ venueList, onSelect, closeModal }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full text-gray-800 h-80 overflow-y-scroll">
@@ -14,31 +8,28 @@ function VenueListModal({
           Select a Venue for your event
         </h2>
         {venueList.map((venue) => (
-          <div
-            key={venue._id}
+          <button
+            type="button"
+            key={venue.id}
             onClick={() => {
-              setFormData({
-                ...formData,
-                venue: venue._id,
-              });
-              setSelectedVenue(venue);
+              onSelect(venue);
               closeModal();
             }}
-            className="w-full max-w-lg p-4 bg-white border border-gray-300 rounded-lg shadow-md flex items-center space-x-4 my-2"
+            className="w-full max-w-lg p-4 bg-white border border-gray-300 rounded-lg shadow-md flex items-center space-x-4 my-2 text-left hover:bg-gray-50"
           >
             {/* venue Details */}
             <div>
               <h2 className="text-lg font-bold text-gray-800">{venue.name}</h2>
               <div className="text-gray-600 mt-2">
-                <p className="text-sm font-medium">
-                  📍 Address: {venue.address}
-                </p>
+                <p className="text-sm font-medium">📍 Address: {venue.address}</p>
+                <p className="text-sm font-medium">💺 Seats: {venue.capacity}</p>
               </div>
             </div>
-          </div>
+          </button>
         ))}
         <div className="flex justify-end space-x-4">
           <button
+            type="button"
             onClick={closeModal}
             className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
           >

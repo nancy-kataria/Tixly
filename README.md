@@ -15,7 +15,8 @@
 
 * [![Next.js][Next.js]][Next.js-url]
 * [![JavaScript][JavaScript]][JavaScript-url]
-* [![MongoDB][MongoDB]][MongoDB-url]
+* [![Supabase][Supabase]][Supabase-url]
+* [![PostgreSQL][PostgreSQL]][PostgreSQL-url]
 * [![Node.js][Node.js]][Node.js-url]
 * [![Tailwind CSS][Tailwind CSS]][Tailwind-url]
 
@@ -62,13 +63,15 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 [linkedin-url]: https://www.linkedin.com/in/nancy-kataria8/
 <!-- Badges (Icons) -->
 [JavaScript]: https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black]
-[MongoDB]: https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white
+[Supabase]: https://img.shields.io/badge/Supabase-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white
+[PostgreSQL]: https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white
 [Next.js]: https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white
 [Node.js]: https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white
 [Tailwind CSS]: https://img.shields.io/badge/TailwindCSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white
 
 <!-- URLs -->
-[MongoDB-url]: https://www.mongodb.com/
+[Supabase-url]: https://supabase.com/
+[PostgreSQL-url]: https://www.postgresql.org/
 [Next.js-url]: https://nextjs.org/
 [Node.js-url]: https://nodejs.org/en
 [Tailwind-url]: https://tailwindcss.com/
