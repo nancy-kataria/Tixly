@@ -1,44 +1,23 @@
 "use client"
-//import { useSession, getSession, signIn, signOut } from "next-auth/react";
 
 import Link from "next/link";
-//import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
 import avatar from "../../public/avatar.png";
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/context/UserContext";
 
 
 export default function Navbar() {
-
-  //const {data: clientSession, status, update} = useSession();
-  //const session = serverSession || clientSession;
-
-  //const[user, setUser] = useState(null);
-  const {user} = useUser();
-  const { refreshUser } = useUser();
+  const { user, signOut } = useUser();
   const router = useRouter();
 
-
   const handleSignOut = async () => {
-      const res = await fetch("/api/auth/signOut", {
-        method: "POST",
-        credentials:"include",
-      });
-
-      if(res.ok)
-      {
-        await refreshUser();
-        router.push("/login");
-      }
-      else
-      {
-        console.error("Failed to log out");
-      }
+    if (await signOut()) {
+      router.push("/login");
+      router.refresh();
+    }
   }
 
-  
   return (
     <nav className="flex items-center justify-between px-6 py-4 bg-black-500 text-white shadow-md">
       {/* Logo */}
@@ -52,7 +31,7 @@ export default function Navbar() {
           <div className="cursor-pointer hover:underline">Explore</div>
         </Link>
 
-        {user?.userType === "Organizer" && (
+        {user?.role === "organizer" && (
             <Link href="/createEvent" passHref>
               <div className="cursor-pointer hover:underline">Create Event</div>
             </Link>
@@ -60,10 +39,12 @@ export default function Navbar() {
         }
 
         {user ? (
-           <p
-           onClick={() => handleSignOut()}
-           className="cursor-pointer hover:underline"
-         > Sign Out</p>
+          <button
+            onClick={handleSignOut}
+            className="cursor-pointer hover:underline"
+          >
+            Sign Out
+          </button>
         ) : (
           <Link href="/login" passHref>
             <div className="cursor-pointer hover:underline">Sign In</div>
@@ -71,22 +52,14 @@ export default function Navbar() {
         )}
 
         {user && (
-          <Link
-            href={{
-              pathname: "/myProfile",
-              query: {
-                userId: user.id,
-              },
-            }}
-            passHref
-          >
+          <Link href="/myProfile" passHref>
             <div className="relative w-8 h-8">
               <Image
-                src={avatar}
+                src={user.avatarUrl || avatar}
                 alt="avatar"
-                className="rounded-full"
+                className="rounded-full object-cover"
                 fill
-                objectFit="cover"
+                sizes="32px"
               />
             </div>
           </Link>
