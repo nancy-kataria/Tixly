@@ -1,77 +1,37 @@
-// To use react hooks
-"use client";
-
 import Image from "next/image";
+import { notFound } from "next/navigation";
 import concert from "../../../../public/concert.jpg";
-import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/server";
 import TicketList from "@/components/tickets/TicketList";
-import { useRouter } from "next/compat/router";
-import { useUser } from "@/context/UserContext";
+import { formatEventDate } from "@/lib/format";
 
-// pages/EventPage.js
-export default function EventPage({ params }) {
-  const { user, isLoading: isUserLoading } = useUser();
+export default async function EventPage({ params }) {
+  const { id } = await params;
+  const supabase = await createClient();
 
-  const [event, setEvent] = useState({});
-  const [sortBy, setSortBy] = useState("status");
-  const [sortedTickets, setSortedTickets] = useState([]);
-  const router = useRouter();
+  const [eventResult, ticketsResult, claimsResult] = await Promise.all([
+    supabase
+      .from("events")
+      .select("id, name, artist, category, starts_at, venue:venues(name, address, capacity), organizer:profiles(name)")
+      .eq("id", id)
+      .maybeSingle(),
+    supabase
+      .from("tickets")
+      .select("id, seat_number, price_cents, status, list_price_cents, owner_id")
+      .eq("event_id", id)
+      .order("seat_number"),
+    supabase.auth.getClaims(),
+  ]);
 
-  const [promptInput, setPromptInput] = useState("");
-  const [response, setResponse] = useState("");
-  const [boxOpen, setBoxOpen] = useState(false);
+  // Also covers ids that aren't valid UUIDs, which make the query error.
+  const event = eventResult.data;
+  if (!event) notFound();
 
-  // Calling APU for Gen AI Response
-  // Gives details for artist
-  const getGenAIresponse = async () => {
-    try {
-      const res = await fetch("/api/genAI", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: promptInput }),
-      });
+  const tickets = ticketsResult.data ?? [];
+  const userId = claimsResult.data?.claims?.sub ?? null;
+  const unsoldCount = tickets.filter((t) => t.status === "available").length;
+  const resaleCount = tickets.filter((t) => t.status === "listed").length;
 
-      const data = await res.json();
-      setResponse(data.choices[0].message.content);
-    } catch (error) {
-      console.error("Error:", error);
-      setResponse("Error fetching response");
-    }
-    setBoxOpen(true)
-  };
-
-  useEffect(() => {
-    //wait for the user context
-    if (isUserLoading) return;
-
-    const getRequest = async () => {
-      const eventId = (await params).id;
-
-      try {
-        var url = `/api/events/get/eventID/${eventId}`;
-        if (user && user.id) url += `?userID=${user.id}`;
-        const res = await fetch(url, { method: `GET` });
-        const data = await res.json();
-        if (res.ok) {
-          setEvent(data);
-          //sort ticket list
-          setSortedTickets([...data.tickets]);
-
-          if (data?.event?.eventArtist) {
-            setPromptInput(
-              `Tell me something about ${data?.event?.eventArtist}`
-            );
-          }
-        } else setEvent({});
-      } catch (e) {
-        console.error(e);
-      }
-    };
-
-    getRequest();
-  }, [params, sortBy, user, isUserLoading]);
-
-  const date = new Date(event?.event?.eventDate);
   return (
     <div>
       <div className="flex items-center bg-gray-100 p-8">
@@ -86,58 +46,34 @@ export default function EventPage({ params }) {
 
         {/* Event Details */}
         <div className="w-full max-w-2xl bg-white mt-6 p-6 rounded-lg shadow-lg">
-          <h1 className="text-3xl font-bold text-gray-800">
-            {event?.event?.eventName}
-          </h1>
-          <h1 className="text-xl font-bold text-gray-800">
-            {event?.event?.eventArtist}
-          </h1>
+          <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+            {event.category}
+          </span>
+          <h1 className="text-3xl font-bold text-gray-800">{event.name}</h1>
+          <h1 className="text-xl font-bold text-gray-800">{event.artist}</h1>
           <p className="text-gray-600 mt-2">
-            <span className="font-semibold">📍 Venue:</span>{" "}
-            {event?.event?.venue?.name}
+            <span className="font-semibold">📍 Venue:</span> {event.venue?.name}
           </p>
           <p className="text-gray-600 mt-1">
-            <span className="font-semibold">📌 Address:</span>{" "}
-            {event?.event?.venue?.address}
+            <span className="font-semibold">📌 Address:</span> {event.venue?.address}
           </p>
           <p className="text-gray-600 mt-1">
-            <span className="font-semibold">🎫 Total Tickets Available:</span>{" "}
-            {event?.event?.venue?.totalSeats}
+            <span className="font-semibold">📅 Date:</span> {formatEventDate(event.starts_at)}
           </p>
           <p className="text-gray-600 mt-1">
-            <span className="font-semibold">📅 Date:</span>{" "}
-            {date?.toLocaleDateString("en-US")}
+            <span className="font-semibold">🎫 Tickets:</span> {unsoldCount} of{" "}
+            {tickets.length} available
+            {resaleCount > 0 && `, ${resaleCount} on resale`}
+          </p>
+          <p className="text-gray-600 mt-1">
+            <span className="font-semibold">🎤 Organized by:</span> {event.organizer?.name}
           </p>
         </div>
       </div>
 
       {/* Ticket List Container */}
-      <div className="flex space-x-8 min-h-screen bg-gray-100 p-8">
-        <div className="flex-[0_0_70%]">
-          {event.tickets && Array.isArray(event.tickets) ? (
-            <TicketList ticketList={event.tickets} userID={user?.id} />
-          ) : (
-            <p>Loading Tickets</p>
-          )}
-        </div>
-
-        <div className="flex-[0_0_30%] text-center">
-          {!boxOpen ? (
-            <button
-              onClick={getGenAIresponse}
-              className="px-4 py-2 bg-black text-white font-semibold rounded hover:bg-gray-800 focus:outline-none"
-            >
-              Click to know more
-            </button>
-          ) : (
-            <div className="mt-4 max-w-sm mx-auto p-6 bg-gray-800 rounded-lg shadow-md">
-              <h2 className="text-xl font-semibold text-white-900 mb-2">
-                Did you know..
-              </h2>
-              <p className="text-white-700">{response}</p>
-            </div>
-          )}
-        </div>
+      <div className="min-h-screen bg-gray-100 p-8">
+        <TicketList tickets={tickets} userId={userId} />
       </div>
     </div>
   );

@@ -1,80 +1,68 @@
 // components/TicketList.js
 "use client";
 
-import { useState, useEffect } from "react";
-import SellTicketModal from "../Modals/sellTicketModal";
+import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import ListTicketModal from "../Modals/ListTicketModal";
+import TransferTicketModal from "../Modals/TransferTicketModal";
+import { formatEventDate, formatPrice } from "@/lib/format";
 
-export default function TicketList({ ticketList, userID, viewType = "event" }) {
+// tickets: [{ id, seat_number, price_cents, status, list_price_cents, owner_id,
+//             event?: { id, name, starts_at } }]  (event is needed for viewType "user")
+export default function TicketList({ tickets, userId, viewType = "event" }) {
+  const router = useRouter();
   const [sortBy, setSortBy] = useState("status");
-  const [sortedticketList, setSortedticketList] = useState([...ticketList]);
-  const [isModalOpen, setIsModalOpen] = useState({
-    ticketId: "",
-    open: false,
-  });
+  const [modal, setModal] = useState(null); // { type: "list" | "transfer", ticket }
+  const [pendingTicketId, setPendingTicketId] = useState(null);
+  const [error, setError] = useState("");
 
-  const openModal = (ticketId) => {
-    setIsModalOpen({ ticketId: ticketId, open: true });
-  };
-  const closeModal = () =>
-    setIsModalOpen({
-      ticketId: "",
-      open: false,
-    });
   //Sorts the Tickets
-  useEffect(() => {
-    if (ticketList && Array.isArray(ticketList)) {
-      const sortedList = [...ticketList].sort((a, b) => {
-        if (sortBy === "seatNumber") {
-          return a.seatNumber - b.seatNumber;
-        }
-        return a[sortBy]?.localeCompare(b[sortBy]);
-      });
-      setSortedticketList(sortedList);
-    }
-  }, [ticketList, sortBy]);
+  const sortedTickets = useMemo(
+    () =>
+      [...tickets].sort((a, b) =>
+        sortBy === "seatNumber"
+          ? a.seat_number - b.seat_number
+          : a.status.localeCompare(b.status) || a.seat_number - b.seat_number
+      ),
+    [tickets, sortBy]
+  );
 
   //Groups tickets by the event
-  const ticketsByEvent =
+  const ticketGroups =
     viewType === "user"
-      ? sortedticketList.reduce((acc, ticket) => {
-          if (!acc[ticket.eventID]) {
-            acc[ticket.eventID] = [];
-          }
-          acc[ticket.eventID].push(ticket);
-          return acc;
-        }, {})
-      : { "All Tickets": sortedticketList };
+      ? Object.values(
+          sortedTickets.reduce((groups, ticket) => {
+            groups[ticket.event.id] ??= { event: ticket.event, tickets: [] };
+            groups[ticket.event.id].tickets.push(ticket);
+            return groups;
+          }, {})
+        )
+      : [{ event: null, tickets: sortedTickets }];
 
-  const handleTicketAction = async (ticketId, action) => {
-    try {
-      if (!userID || userID === "") return;
-
-      const res = await fetch(`/api/tickets/update/${ticketId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userID, action }),
-      });
-
-      if (res.ok) {
-        setSortedticketList((prevTicketList) =>
-          prevTicketList.map((ticket) =>
-            ticket._id === ticketId
-              ? {
-                  ...ticket,
-                  status: action === "purchase" ? "Sold" : "Available",
-                }
-              : ticket
-          )
-        );
-      } else {
-        console.error("Failed to update ticket");
-      }
-    } catch (e) {
-      console.error(e);
-    }
+  // Calls one of the ticket database functions, then re-fetches the page's
+  // data. Resolves to an error message, or null on success.
+  const runAction = async (ticketId, fn, args) => {
+    setPendingTicketId(ticketId);
+    const { error } = await createClient().rpc(fn, args);
+    setPendingTicketId(null);
+    if (error) return error.message;
+    router.refresh();
+    return null;
   };
-  if (!ticketList || ticketList.length === 0) {
+
+  const handleAction = async (ticketId, fn, args) => {
+    if (!userId) {
+      router.push("/login");
+      return;
+    }
+    setError("");
+    const message = await runAction(ticketId, fn, args);
+    if (message) setError(message);
+  };
+
+  if (tickets.length === 0) {
     return <p className="text-sm font-medium">No Tickets yet</p>;
   }
 
@@ -84,7 +72,7 @@ export default function TicketList({ ticketList, userID, viewType = "event" }) {
         <h2 className="text-gray-800 mt-1 text-xl font-bold">Tickets</h2>
         <div>
           <label htmlFor="sort" className="text-gray-600 mt-1">
-            Sort By:
+            Sort By:{" "}
           </label>
           <select
             id="sort"
@@ -98,83 +86,133 @@ export default function TicketList({ ticketList, userID, viewType = "event" }) {
         </div>
       </div>
 
-      {Object.entries(ticketsByEvent).map(([eventID, eventTickets]) => (
-        <div key={eventID} className="mt-6 bg-white rounded-lg p-4 shadow-md">
-          {viewType === "user" && (
-            <Link href={`/event/${eventID}`} passHref>
-              <button className="text-black-500 underline text-lg font-semibold mb-4 hover:text-blue-700">
-                View Event: {eventID}
-              </button>
+      {error && (
+        <p className="mb-4 p-3 rounded bg-red-50 text-red-700 text-sm">{error}</p>
+      )}
+
+      {ticketGroups.map(({ event, tickets: groupTickets }) => (
+        <div key={event?.id ?? "all"} className="mt-6 bg-white rounded-lg p-4 shadow-md">
+          {event && (
+            <Link
+              href={`/event/${event.id}`}
+              className="block text-gray-800 underline text-lg font-semibold mb-4 hover:text-blue-700"
+            >
+              {event.name} · {formatEventDate(event.starts_at)}
             </Link>
           )}
-          <div className="grid grid-cols-8 gap-4" key={Math.random()}>
-            {eventTickets.map((ticket) => (
-              <div
-                key={ticket._id}
-                className="text-gray-600 mt-1 rounded shadow-md flex flex-col items-center p-2"
-              >
-                <span className="text-lg font-semibold">
-                  Seat {ticket.seatNumber}
-                </span>
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
+            {groupTickets.map((ticket) => {
+              const isMine = Boolean(userId) && ticket.owner_id === userId;
+              const isPending = pendingTicketId === ticket.id;
+              const buttonClass =
+                "mt-2 w-full px-2 py-1 rounded text-sm text-white disabled:opacity-60";
 
-                <span className="mt-2">${ticket.price}</span>
-                {/*If The ticket is available and the User does not own it "Purchase" */}
-                {ticket.status === "Available" && !ticket.isOwnedByUser && (
-                  <button
-                    onClick={() => handleTicketAction(ticket._id, "purchase")}
-                    className="mt-4 px-4 py-2 rounded text-white bg-green-500"
-                  >
-                    Buy
-                  </button>
-                )}
-                {/*If The ticket not is available and the User owns it "sell" */}
-                {ticket.status !== "Available" && ticket.isOwnedByUser && (
-                  <button
-                    onClick={() => handleTicketAction(ticket._id, "sell")}
-                    className="mt-4 px-4 py-2 rounded text-white bg-yellow-500"
-                  >
-                    Sell
-                  </button>
-                )}
-                {/*If The ticket is not available and the User owns it "Transfer" */}
-                {ticket.status !== "Available" && ticket.isOwnedByUser && (
-                  <button
-                    onClick={() => openModal(ticket._id)}
-                    className="mt-4 px-4 py-2 rounded text-white bg-yellow-500"
-                  >
-                    Transfer
-                  </button>
-                )}
-                {/*If The ticket is available and the User owns it "cancel sell" */}
-                {ticket.status === "Available" && ticket.isOwnedByUser && (
-                  <button
-                    onClick={() => handleTicketAction(ticket._id, "cancel")}
-                    className="mt-4 px-4 py-2 rounded text-white bg-red-500"
-                  >
-                    Cancel
-                  </button>
-                )}
-                {/*If The ticket is not available and the User does not own it "Unavailable" */}
+              return (
+                <div
+                  key={ticket.id}
+                  className={`text-gray-600 mt-1 rounded shadow-md flex flex-col items-center p-2 ${
+                    isMine ? "ring-2 ring-blue-400" : ""
+                  }`}
+                >
+                  <span className="text-lg font-semibold">
+                    Seat {ticket.seat_number}
+                  </span>
 
-                {ticket.status !== "Available" && !ticket.isOwnedByUser && (
-                  <button
-                    disabled
-                    className="mt-4 px-4 py-2 rounded text-white bg-gray-500 cursor-not-allowed"
-                  >
-                    Unavailable
-                  </button>
-                )}
-                {isModalOpen.open && isModalOpen.ticketId === ticket._id && (
-                  <SellTicketModal
-                    closeModal={closeModal}
-                    ticketId={ticket._id}
-                  />
-                )}
-              </div>
-            ))}
+                  {ticket.status === "listed" ? (
+                    <span className="mt-1 text-sm">
+                      {formatPrice(ticket.list_price_cents)}{" "}
+                      <span className="text-xs text-blue-600">resale</span>
+                    </span>
+                  ) : (
+                    <span className="mt-1 text-sm">{formatPrice(ticket.price_cents)}</span>
+                  )}
+                  {isMine && <span className="text-xs text-blue-600">Your ticket</span>}
+
+                  {/* Unsold, or listed by someone else: "Buy" */}
+                  {(ticket.status === "available" ||
+                    (ticket.status === "listed" && !isMine)) && (
+                    <button
+                      disabled={isPending}
+                      onClick={() =>
+                        handleAction(ticket.id, "buy_ticket", { p_ticket_id: ticket.id })
+                      }
+                      className={`${buttonClass} bg-green-500`}
+                    >
+                      {isPending ? "…" : "Buy"}
+                    </button>
+                  )}
+                  {/* Yours and not listed: "Sell" */}
+                  {ticket.status === "sold" && isMine && (
+                    <button
+                      disabled={isPending}
+                      onClick={() => setModal({ type: "list", ticket })}
+                      className={`${buttonClass} bg-yellow-500`}
+                    >
+                      Sell
+                    </button>
+                  )}
+                  {/* Yours and listed: "Cancel" the listing */}
+                  {ticket.status === "listed" && isMine && (
+                    <button
+                      disabled={isPending}
+                      onClick={() =>
+                        handleAction(ticket.id, "unlist_ticket", { p_ticket_id: ticket.id })
+                      }
+                      className={`${buttonClass} bg-red-500`}
+                    >
+                      {isPending ? "…" : "Cancel sale"}
+                    </button>
+                  )}
+                  {/* Yours: "Transfer" to another user */}
+                  {isMine && (
+                    <button
+                      disabled={isPending}
+                      onClick={() => setModal({ type: "transfer", ticket })}
+                      className={`${buttonClass} bg-yellow-600`}
+                    >
+                      Transfer
+                    </button>
+                  )}
+                  {/* Owned by someone else and not for sale */}
+                  {ticket.status === "sold" && !isMine && (
+                    <button
+                      disabled
+                      className={`${buttonClass} bg-gray-500 cursor-not-allowed`}
+                    >
+                      Unavailable
+                    </button>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       ))}
+
+      {modal?.type === "list" && (
+        <ListTicketModal
+          ticket={modal.ticket}
+          onClose={() => setModal(null)}
+          onConfirm={(priceCents) =>
+            runAction(modal.ticket.id, "list_ticket", {
+              p_ticket_id: modal.ticket.id,
+              p_price_cents: priceCents,
+            })
+          }
+        />
+      )}
+      {modal?.type === "transfer" && (
+        <TransferTicketModal
+          ticket={modal.ticket}
+          onClose={() => setModal(null)}
+          onConfirm={(email) =>
+            runAction(modal.ticket.id, "transfer_ticket", {
+              p_ticket_id: modal.ticket.id,
+              p_recipient_email: email,
+            })
+          }
+        />
+      )}
     </div>
   );
 }

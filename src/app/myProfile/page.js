@@ -1,170 +1,123 @@
-"use client";
-
-import { useEffect, useState } from "react";
-// import { useRouter } from "next/router";
-// This is the same useRouter hook, but can be used in both
-// app and pages directories.
-// It differs from next/router in that it does not throw an
-// error when the pages router is not mounted, and instead has a
-// return type of NextRouter | null. This allows developers to
-// convert components to support running in both app and pages as they transition to the app router.
-//import { useRouter } from "next/compat/router";
-import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import EventList from "@/components/EventList";
-
-import { useUser } from "@/context/UserContext";
 import TicketList from "@/components/tickets/TicketList";
+import BecomeOrganizerButton from "@/components/BecomeOrganizerButton";
+import { formatPrice } from "@/lib/format";
 
-export default function MyProfile() {
-  const router = useRouter();
-  const { user, isLoading: isUserLoading } = useUser();
-
-  const [eventList, setEventList] = useState([]);
-  const [ticketList, setTicketList] = useState([]);
-
-  const [loading, setLoading] = useState(true);
-  const [transactions, setTransactions] = useState([]);
-
-  // using multiple useEffect hooks in one component. This allows you to separate unrelated logic into distinct
-  //Organizer Events
-  useEffect(() => {
-    if (router && !router.isReady) {
-      //return;
-    }
-    if (isUserLoading || !user) return;
-    const getEventsOwnedbyOrganizer = async () => {
-      try {
-        const response = await fetch(`/api/events/get/organizerID/${user.id}`, {
-          method: "GET",
-        });
-        const data = await response.json();
-        setEventList(data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    getEventsOwnedbyOrganizer();
-  }, [user, isUserLoading, router]);
-
-  //TicketList
-  useEffect(() => {
-    if (isUserLoading || !user) return;
-    const getTicketList = async () => {
-      try {
-        var url = `/api/ticketOwnership/get/user/${user.id}`;
-        const res = await fetch(url, { method: `GET` });
-        const data = await res.json();
-        if (res.ok) {
-          setTicketList(data);
-          //sort ticket list
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    };
-    getTicketList();
-  }, [user, isUserLoading]);
-
-  //Transactions
-  useEffect(() => {
-    if (isUserLoading || !user) return;
-    const getTransactions = async () => {
-      try {
-        var url = `/api/users/get/transactions/${user.id}`;
-        const res = await fetch(url, { method: `GET` });
-        const data = await res.json();
-        if (res.ok) {
-          setTransactions(data.transactions);
-          //sort ticket list
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    };
-    getTransactions();
-  }, [user, isUserLoading]);
-
-  useEffect(() => {
-    if (!isUserLoading && user) {
-      setLoading(false);
-    }
-  }, [isUserLoading, user]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <p className="text-lg font-medium text-gray-600">Loading...</p>
-      </div>
-    );
+function describeTransaction(transaction, userId) {
+  const received = transaction.to_user === userId;
+  switch (transaction.kind) {
+    case "purchase":
+      return "Bought from the event";
+    case "resale":
+      return received ? "Bought on resale" : "Sold on resale";
+    case "transfer":
+      return received ? "Received as a transfer" : "Transferred to another user";
   }
+}
 
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <p className="text-lg font-medium text-gray-600">
-          You need to log in to view this page.
-        </p>
-      </div>
-    );
-  }
+export default async function MyProfile() {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const userId = claimsData?.claims?.sub;
+  // src/proxy.js already redirects signed-out users; this is a fallback.
+  if (!userId) redirect("/login");
+
+  const [profileResult, ticketsResult, transactionsResult] = await Promise.all([
+    supabase.from("profiles").select("name, role").eq("id", userId).single(),
+    supabase
+      .from("tickets")
+      .select("id, seat_number, price_cents, status, list_price_cents, owner_id, event:events(id, name, starts_at)")
+      .eq("owner_id", userId),
+    // RLS limits this to transactions the user is part of.
+    supabase
+      .from("ticket_transactions")
+      .select("id, kind, price_cents, created_at, from_user, to_user, ticket:tickets(seat_number, event:events(id, name))")
+      .order("created_at", { ascending: false }),
+  ]);
+
+  const profile = profileResult.data;
+  const isOrganizer = profile?.role === "organizer";
+  const { data: events } = isOrganizer
+    ? await supabase
+        .from("events")
+        .select("id, name, category, starts_at, venue:venues(name)")
+        .eq("organizer_id", userId)
+        .order("starts_at")
+    : { data: [] };
+  const transactions = transactionsResult.data ?? [];
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="text-gray-800 mx-4">
-        <h3 className="text-2xl font-bold py-4">{user.userType}</h3>
-        <p className="text-lg font-medium">{user.name}</p>
-        <h3 className="text-2xl font-bold py-4">Your Event List</h3>
+      <div className="text-gray-800 mx-4 pb-8">
+        <h3 className="text-2xl font-bold pt-4">{profile?.name}</h3>
+        <p className="text-lg font-medium capitalize">{profile?.role}</p>
 
-        <EventList eventList={eventList}></EventList>
+        {!isOrganizer && (
+          <div className="mt-4 p-4 bg-white rounded-lg shadow-md max-w-xl space-y-3">
+            <p>Want to sell tickets for your own events?</p>
+            <BecomeOrganizerButton />
+          </div>
+        )}
+
+        {isOrganizer && (
+          <>
+            <div className="flex items-center justify-between py-4">
+              <h3 className="text-2xl font-bold">Your Event List</h3>
+              <Link
+                href="/createEvent"
+                className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
+              >
+                Create event
+              </Link>
+            </div>
+            <EventList events={events} emptyMessage="You haven't created any events yet" />
+          </>
+        )}
 
         <h3 className="text-2xl font-bold py-4">Your Ticket List</h3>
-        <TicketList
-          ticketList={ticketList}
-          userID={user?.id}
-          viewType="user"
-        ></TicketList>
+        <TicketList tickets={ticketsResult.data ?? []} userId={userId} viewType="user" />
 
         {/*Transaction List */}
-
-        <h2 className="text-2xl font-bold text-gray-600 mt-1">
-          Transaction List
-        </h2>
-
-        <div className="flex justify-between items-center mb-4">
-          <div className="grid grid-cols-3 gap-4">
-            {transactions.map((transaction) => (
-              <div
-                key={transaction._id}
-                className="text-gray-600 mt-1 rounded shadow-md flex flex-col p-2"
-              >
-                <span className="mt-2">
-                  Transaction Date:{" "}
-                  {new Date(transaction?.transactionDate).toLocaleDateString()}
-                </span>
-                <span className="mt-2">
-                  Transaction Type: {transaction?.transactionType}
-                </span>
-                <span className="mt-2">Status: {transaction?.status}</span>
-                <h2 className="text-gray-600 mt-1">Tickets</h2>
-                <div className="grid grid-cols-3 gap-4">
-                  {transaction.tickets.map((ticket) => (
-                    <div
-                      key={ticket._id}
-                      className="text-gray-600 mt-1 rounded shadow-md flex flex-col items-center"
-                    >
-                      <span className="mt-2">Price: ${ticket?.price}</span>
-                      <span className="mt-2">Status: {ticket?.status}</span>
-                      <span className="mt-2">
-                        Seat Number: {ticket?.seatNumber}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
+        <h2 className="text-2xl font-bold py-4">Transaction List</h2>
+        {transactions.length === 0 ? (
+          <p>No Transactions to show</p>
+        ) : (
+          <div className="bg-white rounded-lg shadow-md overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="text-gray-500 border-b">
+                <tr>
+                  <th className="p-3">Date</th>
+                  <th className="p-3">Event</th>
+                  <th className="p-3">Seat</th>
+                  <th className="p-3">What happened</th>
+                  <th className="p-3">Price</th>
+                </tr>
+              </thead>
+              <tbody>
+                {transactions.map((transaction) => (
+                  <tr key={transaction.id} className="border-b last:border-0">
+                    <td className="p-3">
+                      {new Date(transaction.created_at).toLocaleDateString("en-US")}
+                    </td>
+                    <td className="p-3">
+                      <Link href={`/event/${transaction.ticket.event.id}`} className="underline">
+                        {transaction.ticket.event.name}
+                      </Link>
+                    </td>
+                    <td className="p-3">{transaction.ticket.seat_number}</td>
+                    <td className="p-3">{describeTransaction(transaction, userId)}</td>
+                    <td className="p-3">
+                      {transaction.price_cents === null ? "—" : formatPrice(transaction.price_cents)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        </div>
-        {transactions.length == 0 && <p>No Transactions to show</p>}
+        )}
       </div>
     </div>
   );
