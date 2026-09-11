@@ -1,15 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import Button from "@/components/ui/Button";
+import { useUser } from "@/context/UserContext";
+import Button, { buttonClasses } from "@/components/ui/Button";
 import { formatPrice, ticketLabel } from "@/lib/format";
 
 // Tickets fans have listed for resale on one event, cheapest first.
-// listings: [{ id, number, price_cents, list_price_cents, owner_id, section: { name } }]
+// listings: [{ id, number, price_cents, list_price_cents, owner_id, inMyCart,
+//              section: { name } }]
 export default function ResaleList({ listings, userId }) {
   const router = useRouter();
+  const { refreshCart } = useUser();
   const [pendingId, setPendingId] = useState(null);
   const [error, setError] = useState("");
 
@@ -26,6 +30,7 @@ export default function ResaleList({ listings, userId }) {
       setError(error.message);
       return;
     }
+    refreshCart();
     router.refresh();
   };
 
@@ -64,9 +69,13 @@ export default function ResaleList({ listings, userId }) {
                   <Button size="sm" variant="danger" disabled={isPending} onClick={() => runAction(ticket.id, "unlist_ticket")}>
                     {isPending ? "Cancelling…" : "Cancel sale"}
                   </Button>
+                ) : ticket.inMyCart ? (
+                  <Link href="/cart" className={buttonClasses({ size: "sm", variant: "outline" })}>
+                    In your cart
+                  </Link>
                 ) : (
-                  <Button size="sm" disabled={isPending} onClick={() => runAction(ticket.id, "buy_resale_ticket")}>
-                    {isPending ? "Buying…" : "Buy"}
+                  <Button size="sm" disabled={isPending} onClick={() => runAction(ticket.id, "hold_resale_ticket")}>
+                    {isPending ? "Adding…" : "Add to cart"}
                   </Button>
                 )}
               </div>

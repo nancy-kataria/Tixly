@@ -184,6 +184,33 @@ as $$
   where section_id = tests.section_id(p_event_name, p_section_name) and number = p_number
 $$;
 
+-- The user's unpaid order, if any.
+create or replace function tests.pending_order(p_user text)
+returns uuid
+language sql stable
+security definer set search_path = ''
+as $$
+  select id from public.orders where buyer_id = tests.user_id(p_user) and status = 'pending'
+$$;
+
+-- Checks out the current user's cart and pays for it, the way the Stripe
+-- webhook does after a successful payment. Returns the order id.
+create or replace function tests.pay_for_cart()
+returns uuid
+language plpgsql
+security definer set search_path = ''
+as $$
+declare
+  v_order_id uuid;
+  v_total int;
+begin
+  select o.order_id, o.total_cents into v_order_id, v_total from public.create_order() as o;
+  update public.orders set stripe_session_id = 'cs_test_' || v_order_id where id = v_order_id;
+  perform public.complete_order(v_order_id, 'cs_test_' || v_order_id, 'pi_test_' || v_order_id, v_total);
+  return v_order_id;
+end;
+$$;
+
 grant usage on schema tests to anon, authenticated;
 grant execute on all functions in schema tests to anon, authenticated;
 

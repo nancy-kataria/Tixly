@@ -1,8 +1,10 @@
 "use client"
 
+import { useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
+import { ShoppingBag } from "lucide-react";
 import avatar from "../../public/avatar.png";
 import { useUser } from "@/context/UserContext";
 import Logo from "@/components/ui/Logo";
@@ -10,9 +12,14 @@ import { buttonClasses } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
 
 export default function Navbar() {
-  const { user, signOut } = useUser();
+  const { user, cartCount, refreshCart, signOut } = useUser();
   const router = useRouter();
   const pathname = usePathname();
+
+  // Holds expire on their own, so re-check the cart on each page change.
+  useEffect(() => {
+    refreshCart();
+  }, [pathname, refreshCart]);
 
   const handleSignOut = async () => {
     if (await signOut()) {
@@ -52,6 +59,18 @@ export default function Navbar() {
         <div className="flex items-center gap-2">
           {user ? (
             <>
+              <Link
+                href="/cart"
+                aria-label={`Cart, ${cartCount} ${cartCount === 1 ? "ticket" : "tickets"}`}
+                className="relative grid size-9 place-items-center rounded-full transition hover:bg-secondary"
+              >
+                <ShoppingBag className="size-5" aria-hidden />
+                {cartCount > 0 && (
+                  <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
+                    {cartCount}
+                  </span>
+                )}
+              </Link>
               <button onClick={handleSignOut} className={buttonClasses({ variant: "ghost", size: "sm" })}>
                 Sign out
               </button>

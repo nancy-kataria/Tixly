@@ -1,5 +1,5 @@
 begin;
-select plan(14);
+select plan(16);
 
 select tests.create_user('organizer', 'organizer');
 select tests.create_user('seller');
@@ -9,7 +9,8 @@ select tests.create_event('Test Show', 'organizer', p_capacity => 2);
 -- The seller buys one ticket. Tickets are handed out in number order, so
 -- it's #1; #2 stays unsold.
 select tests.authenticate_as('seller');
-select public.buy_tickets(tests.section_id('Test Show'), 1);
+select public.hold_tickets(tests.section_id('Test Show'), 1);
+select tests.pay_for_cart();
 
 -- Listing
 select throws_ok(
@@ -41,7 +42,7 @@ select throws_ok(
 );
 
 select throws_ok(
-  $$ select public.buy_resale_ticket(tests.ticket_id('Test Show', 1)) $$,
+  $$ select public.hold_resale_ticket(tests.ticket_id('Test Show', 1)) $$,
   'P0001', 'You already own this ticket',
   'sellers cannot buy their own listing'
 );
@@ -62,20 +63,37 @@ select throws_ok(
 );
 
 select throws_ok(
-  $$ select public.buy_resale_ticket(tests.ticket_id('Test Show', 2)) $$,
+  $$ select public.hold_resale_ticket(tests.ticket_id('Test Show', 2)) $$,
   'P0001', 'This ticket is not for sale',
   'unsold tickets are bought by section, not on resale'
 );
 
 select lives_ok(
-  $$ select public.buy_resale_ticket(tests.ticket_id('Test Show', 1)) $$,
-  'a buyer can buy a listed ticket'
+  $$ select public.hold_resale_ticket(tests.ticket_id('Test Show', 1)) $$,
+  'a buyer can add a listed ticket to their cart'
+);
+
+-- The seller can't pull the ticket while the buyer is checking out
+select tests.authenticate_as('seller');
+
+select throws_ok(
+  $$ select public.unlist_ticket(tests.ticket_id('Test Show', 1)) $$,
+  'P0001', 'Someone is buying this ticket right now. Try again in a few minutes',
+  'a listing cannot be cancelled while it is in someone''s cart'
+);
+
+select tests.authenticate_as('buyer');
+
+select lives_ok(
+  $$ select tests.pay_for_cart() $$,
+  'the buyer pays for the resale ticket'
 );
 
 select ok(
-  (select owner_id = tests.user_id('buyer') and status = 'sold' and list_price_cents is null
+  (select owner_id = tests.user_id('buyer') and status = 'sold'
+          and list_price_cents is null and held_by is null
    from tests.ticket('Test Show', 1)),
-  'the ticket moves to the buyer and is no longer listed'
+  'the ticket moves to the buyer and is off the market'
 );
 
 select is(
@@ -84,9 +102,10 @@ select is(
      and kind = 'resale'
      and from_user = tests.user_id('seller')
      and to_user = tests.user_id('buyer')
-     and price_cents = 7500),
+     and price_cents = 7500
+     and order_id is not null),
   1::bigint,
-  'the resale is recorded with the seller and the resale price'
+  'the resale is recorded with the seller, the price and the order'
 );
 
 -- Cancelling a listing

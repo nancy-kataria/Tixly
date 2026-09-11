@@ -1,5 +1,5 @@
 begin;
-select plan(14);
+select plan(17);
 
 select tests.create_user('organizer', 'organizer');
 select tests.create_user('fan_a');
@@ -8,9 +8,11 @@ select tests.create_event('Test Show', 'organizer', p_capacity => 2);
 
 -- Tickets are handed out in number order: fan_a gets #1, fan_b gets #2.
 select tests.authenticate_as('fan_a');
-select public.buy_tickets(tests.section_id('Test Show'), 1);
+select public.hold_tickets(tests.section_id('Test Show'), 1);
+select tests.pay_for_cart();
 select tests.authenticate_as('fan_b');
-select public.buy_tickets(tests.section_id('Test Show'), 1);
+select public.hold_tickets(tests.section_id('Test Show'), 1);
+select tests.pay_for_cart();
 
 -- What a signed-in fan can see
 select tests.authenticate_as('fan_a');
@@ -19,6 +21,12 @@ select is(
   (select count(*) from public.ticket_transactions),
   1::bigint,
   'fans see only their own transactions'
+);
+
+select is(
+  (select count(*) from public.orders),
+  1::bigint,
+  'fans see only their own orders'
 );
 
 select is(
@@ -78,6 +86,12 @@ select is(
 );
 
 select is(
+  (select count(*) from public.orders),
+  0::bigint,
+  'signed-out visitors see no orders'
+);
+
+select is(
   (select count(*) from public.tickets where event_id = (select id from public.events where name = 'Test Show')),
   2::bigint,
   'anyone can see ticket availability'
@@ -96,6 +110,13 @@ select throws_like(
   $$ update public.tickets set status = 'listed' where id = tests.ticket_id('Test Show', 1) $$,
   '%tickets_list_price_matches_status%',
   'a ticket cannot be listed without a price'
+);
+
+select throws_like(
+  $$ update public.tickets set held_by = tests.user_id('fan_b'), held_until = now() + interval '10 minutes'
+     where id = tests.ticket_id('Test Show', 1) $$,
+  '%tickets_hold_only_for_sale%',
+  'a sold ticket cannot be put in a cart'
 );
 
 select throws_like(

@@ -30,7 +30,7 @@ export default async function EventPage({ params }) {
     supabase.from("section_availability").select("*").eq("event_id", id).order("sort_order"),
     supabase
       .from("tickets")
-      .select("id, number, price_cents, list_price_cents, owner_id, section:ticket_sections(name)")
+      .select("id, number, price_cents, list_price_cents, owner_id, held_by, held_until, section:ticket_sections(name)")
       .eq("event_id", id)
       .eq("status", "listed")
       .order("list_price_cents")
@@ -43,8 +43,17 @@ export default async function EventPage({ params }) {
   if (!event) notFound();
 
   const sections = sectionsResult.data ?? [];
-  const listings = listingsResult.data ?? [];
   const userId = claimsResult.data?.claims?.sub ?? null;
+
+  // Hide resale tickets sitting in someone else's cart; flag ones in yours.
+  const now = new Date();
+  const listings = (listingsResult.data ?? [])
+    .map((ticket) => ({
+      ...ticket,
+      isHeld: ticket.held_until !== null && new Date(ticket.held_until) > now,
+    }))
+    .filter((ticket) => !ticket.isHeld || ticket.held_by === userId)
+    .map(({ held_by, held_until, isHeld, ...ticket }) => ({ ...ticket, inMyCart: isHeld }));
 
   const { count: ownedCount } = userId
     ? await supabase

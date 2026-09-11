@@ -8,7 +8,8 @@ select tests.create_event('Test Show', 'organizer', p_capacity => 3);
 
 -- The sender owns tickets #1 and #2, and #2 is listed for resale.
 select tests.authenticate_as('sender');
-select public.buy_tickets(tests.section_id('Test Show'), 2);
+select public.hold_tickets(tests.section_id('Test Show'), 2);
+select tests.pay_for_cart();
 select public.list_ticket(tests.ticket_id('Test Show', 2), 6000);
 
 select lives_ok(
