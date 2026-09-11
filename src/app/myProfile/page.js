@@ -1,9 +1,14 @@
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import avatar from "../../../public/avatar.png";
 import { createClient } from "@/lib/supabase/server";
 import EventList from "@/components/EventList";
 import TicketList from "@/components/tickets/TicketList";
 import BecomeOrganizerButton from "@/components/BecomeOrganizerButton";
+import Card from "@/components/ui/Card";
+import Eyebrow from "@/components/ui/Eyebrow";
+import { buttonClasses } from "@/components/ui/Button";
 import { formatPrice } from "@/lib/format";
 
 function describeTransaction(transaction, userId) {
@@ -26,7 +31,7 @@ export default async function MyProfile() {
   if (!userId) redirect("/login");
 
   const [profileResult, ticketsResult, transactionsResult] = await Promise.all([
-    supabase.from("profiles").select("name, role").eq("id", userId).single(),
+    supabase.from("profiles").select("name, role, avatar_url").eq("id", userId).single(),
     supabase
       .from("tickets")
       .select("id, seat_number, price_cents, status, list_price_cents, owner_id, event:events(id, name, starts_at)")
@@ -41,75 +46,78 @@ export default async function MyProfile() {
   const profile = profileResult.data;
   const isOrganizer = profile?.role === "organizer";
   const { data: events } = isOrganizer
-    ? await supabase
-        .from("events")
-        .select("id, name, category, starts_at, venue:venues(name)")
-        .eq("organizer_id", userId)
-        .order("starts_at")
+    ? await supabase.from("event_summaries").select("*").eq("organizer_id", userId).order("starts_at")
     : { data: [] };
   const transactions = transactionsResult.data ?? [];
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="text-gray-800 mx-4 pb-8">
-        <h3 className="text-2xl font-bold pt-4">{profile?.name}</h3>
-        <p className="text-lg font-medium capitalize">{profile?.role}</p>
-
-        {!isOrganizer && (
-          <div className="mt-4 p-4 bg-white rounded-lg shadow-md max-w-xl space-y-3">
-            <p>Want to sell tickets for your own events?</p>
+    <div className="mx-auto max-w-7xl space-y-8 px-6 py-10">
+      <Card className="flex flex-wrap items-center gap-5 p-6 sm:p-8">
+        <div className="relative size-16 overflow-hidden rounded-full ring-4 ring-surface-border">
+          <Image src={profile?.avatar_url || avatar} alt="" fill sizes="64px" className="object-cover" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-3xl font-medium tracking-tight">{profile?.name}</h1>
+          <span className="mt-1 inline-block rounded-full bg-secondary px-3 py-0.5 text-xs font-semibold capitalize text-secondary-foreground">
+            {profile?.role}
+          </span>
+        </div>
+        {isOrganizer ? (
+          <Link href="/createEvent" className={buttonClasses()}>
+            Create event
+          </Link>
+        ) : (
+          <div className="flex flex-wrap items-center gap-4">
+            <p className="text-sm text-muted-foreground">Want to sell tickets for your own events?</p>
             <BecomeOrganizerButton />
           </div>
         )}
+      </Card>
 
-        {isOrganizer && (
-          <>
-            <div className="flex items-center justify-between py-4">
-              <h3 className="text-2xl font-bold">Your Event List</h3>
-              <Link
-                href="/createEvent"
-                className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
-              >
-                Create event
-              </Link>
-            </div>
-            <EventList events={events} emptyMessage="You haven't created any events yet" />
-          </>
-        )}
+      {isOrganizer && (
+        <section>
+          <Eyebrow>Organizer</Eyebrow>
+          <h2 className="mb-5 mt-1 text-3xl font-medium tracking-tight">Your events</h2>
+          <EventList events={events} emptyMessage="You haven't created any events yet." />
+        </section>
+      )}
 
-        <h3 className="text-2xl font-bold py-4">Your Ticket List</h3>
+      <Card as="section" className="p-6 sm:p-8">
+        <h2 className="mb-5 text-3xl font-medium tracking-tight">Your tickets</h2>
         <TicketList tickets={ticketsResult.data ?? []} userId={userId} viewType="user" />
+      </Card>
 
-        {/*Transaction List */}
-        <h2 className="text-2xl font-bold py-4">Transaction List</h2>
+      {/*Transaction List */}
+      <Card as="section" className="p-6 sm:p-8">
+        <h2 className="mb-5 text-3xl font-medium tracking-tight">Transaction history</h2>
         {transactions.length === 0 ? (
-          <p>No Transactions to show</p>
+          <p className="text-sm text-muted-foreground">No transactions yet.</p>
         ) : (
-          <div className="bg-white rounded-lg shadow-md overflow-x-auto">
+          <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="text-gray-500 border-b">
-                <tr>
-                  <th className="p-3">Date</th>
-                  <th className="p-3">Event</th>
-                  <th className="p-3">Seat</th>
-                  <th className="p-3">What happened</th>
-                  <th className="p-3">Price</th>
+              <thead className="text-xs uppercase tracking-wider text-muted-foreground">
+                <tr className="border-b border-border">
+                  <th className="py-3 pr-4 font-semibold">Date</th>
+                  <th className="py-3 pr-4 font-semibold">Event</th>
+                  <th className="py-3 pr-4 font-semibold">Seat</th>
+                  <th className="py-3 pr-4 font-semibold">What happened</th>
+                  <th className="py-3 text-right font-semibold">Price</th>
                 </tr>
               </thead>
               <tbody>
                 {transactions.map((transaction) => (
-                  <tr key={transaction.id} className="border-b last:border-0">
-                    <td className="p-3">
+                  <tr key={transaction.id} className="border-b border-border last:border-0">
+                    <td className="py-3 pr-4 text-muted-foreground">
                       {new Date(transaction.created_at).toLocaleDateString("en-US")}
                     </td>
-                    <td className="p-3">
-                      <Link href={`/event/${transaction.ticket.event.id}`} className="underline">
+                    <td className="py-3 pr-4">
+                      <Link href={`/event/${transaction.ticket.event.id}`} className="font-medium hover:text-primary-text">
                         {transaction.ticket.event.name}
                       </Link>
                     </td>
-                    <td className="p-3">{transaction.ticket.seat_number}</td>
-                    <td className="p-3">{describeTransaction(transaction, userId)}</td>
-                    <td className="p-3">
+                    <td className="py-3 pr-4">{transaction.ticket.seat_number}</td>
+                    <td className="py-3 pr-4">{describeTransaction(transaction, userId)}</td>
+                    <td className="py-3 text-right font-medium">
                       {transaction.price_cents === null ? "—" : formatPrice(transaction.price_cents)}
                     </td>
                   </tr>
@@ -118,7 +126,7 @@ export default async function MyProfile() {
             </table>
           </div>
         )}
-      </div>
+      </Card>
     </div>
   );
 }

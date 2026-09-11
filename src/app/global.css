@@ -1,21 +1,126 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
+/*
+ * Tixly "Electric Mint" design tokens. Light mode only for now: the dark
+ * palette that came with the design is a generic slate theme without the
+ * brand's mint, so it needs its own pass.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
+
+  --background: oklch(0.975 0.018 164);
+  --foreground: oklch(0.205 0.047 248);
+  --card: oklch(0.99 0.008 164);
+  --card-foreground: oklch(0.205 0.047 248);
+  --popover: oklch(0.99 0.008 164);
+  --popover-foreground: oklch(0.205 0.047 248);
+  --primary: oklch(0.77 0.15 169);
+  --primary-foreground: oklch(0.205 0.047 248);
+  --secondary: oklch(0.93 0.045 164);
+  --secondary-foreground: oklch(0.28 0.055 157);
+  --muted: oklch(0.94 0.025 170);
+  --muted-foreground: oklch(0.48 0.04 225);
+  --accent: oklch(0.9 0.07 169);
+  --accent-foreground: oklch(0.205 0.047 248);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.984 0.003 247.858);
+  --border: oklch(0.82 0.045 176 / 55%);
+  --input: oklch(0.78 0.04 176 / 60%);
+  --ring: oklch(0.66 0.15 169);
+
+  /*
+   * Mint used as text. Plain --primary on the light background is only
+   * ~1.9:1 contrast, so text uses darker mints:
+   *   --primary-text     small text, passes WCAG AA (>= 4.5:1)
+   *   --primary-display  large headings, passes AA for large text (>= 3:1)
+   */
+  --primary-text: oklch(0.5 0.11 169);
+  --primary-display: oklch(0.6 0.14 169);
+
+  --surface-glass: oklch(1 0 0 / 55%);
+  --surface-strong: oklch(1 0 0 / 78%);
+  --surface-border: oklch(1 0 0 / 72%);
+
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-text: var(--primary-text);
+  --color-primary-display: var(--primary-display);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-surface-glass: var(--surface-glass);
+  --color-surface-strong: var(--surface-strong);
+  --color-surface-border: var(--surface-border);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* rounded-card for large panels, rounded-panel for images and tiles */
+  --radius-card: 1.75rem;
+  --radius-panel: 1.25rem;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+/* Frosted-glass surfaces */
+@utility glass {
+  background-color: var(--surface-glass);
+  border: 1px solid var(--surface-border);
+  backdrop-filter: blur(24px) saturate(140%);
+  box-shadow: 0 24px 60px -28px oklch(0.45 0.08 170 / 35%);
+}
+
+@utility glass-strong {
+  background-color: var(--surface-strong);
+  border: 1px solid var(--surface-border);
+  backdrop-filter: blur(24px) saturate(140%);
+  box-shadow: 0 24px 60px -28px oklch(0.45 0.08 170 / 35%);
+}
+
+@layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: var(--border);
   }
-}
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  body {
+    min-height: 100vh;
+    color: var(--foreground);
+    background:
+      radial-gradient(60rem 40rem at 5% -10%, oklch(0.9 0.07 169 / 70%), transparent 60%),
+      radial-gradient(50rem 32rem at 100% 15%, oklch(0.93 0.045 164 / 80%), transparent 60%),
+      var(--background);
+    background-attachment: fixed;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
 }

@@ -4,9 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useUser } from "@/context/UserContext";
-
-const inputClass =
-  "w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800";
+import Card from "@/components/ui/Card";
+import Eyebrow from "@/components/ui/Eyebrow";
+import Button, { buttonClasses } from "@/components/ui/Button";
+import Input, { Label } from "@/components/ui/Input";
 
 function Page() {
   const router = useRouter();
@@ -43,91 +44,81 @@ function Page() {
   };
 
   if (isUserLoading) {
-    return <p className="p-8 text-gray-600">Loading…</p>;
+    return <p className="px-6 py-16 text-center text-muted-foreground">Loading…</p>;
   }
 
   if (user?.role !== "organizer") {
     return (
-      <div className="max-w-lg mx-auto my-10 bg-white p-8 rounded-lg shadow-md text-gray-800 space-y-4">
-        <h2 className="text-2xl font-semibold">Only organizers can add venues</h2>
-        <Link href="/organizers" className="underline">
-          Become an organizer
-        </Link>
+      <div className="mx-auto max-w-lg px-6 py-16">
+        <Card className="p-8 text-center">
+          <h1 className="text-2xl font-medium tracking-tight">Only organizers can add venues</h1>
+          <Link href="/organizers" className={buttonClasses({ className: "mt-6" })}>
+            Become an organizer
+          </Link>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="max-w-lg mx-auto my-10 bg-white p-8 rounded-lg shadow-md">
-      <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">
-        Add Venue
-      </h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-gray-700 font-medium mb-1" htmlFor="name">
-            Name
-          </label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleFormDataChange}
-            required
-            className={inputClass}
-            placeholder="Enter Venue Name"
-          />
-        </div>
+    <div className="mx-auto max-w-2xl px-6 py-10">
+      <Card className="p-8 sm:p-10">
+        <Eyebrow>Organizer</Eyebrow>
+        <h1 className="mt-1 text-4xl font-medium tracking-tight">Add a venue</h1>
 
-        <div>
-          <label className="block text-gray-700 font-medium mb-1" htmlFor="address">
-            Address
-          </label>
-          <input
-            type="text"
-            id="address"
-            name="address"
-            value={formData.address}
-            onChange={handleFormDataChange}
-            required
-            className={inputClass}
-            placeholder="Enter Venue Address"
-          />
-        </div>
+        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+          <div>
+            <Label htmlFor="name">Name</Label>
+            <Input
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleFormDataChange}
+              required
+              placeholder="Harbor Amphitheater"
+            />
+          </div>
 
-        <div>
-          <label className="block text-gray-700 font-medium mb-1" htmlFor="capacity">
-            Total Seats (up to 1,000)
-          </label>
-          <input
-            type="number"
-            min="1"
-            max="1000"
-            id="capacity"
-            name="capacity"
-            value={formData.capacity}
-            onChange={handleFormDataChange}
-            required
-            className={inputClass}
-            placeholder="Enter Total Seats"
-          />
-        </div>
+          <div>
+            <Label htmlFor="address">Address</Label>
+            <Input
+              id="address"
+              name="address"
+              value={formData.address}
+              onChange={handleFormDataChange}
+              required
+              placeholder="120 Bayfront Dr, Long Beach, CA"
+            />
+          </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+          <div>
+            <Label htmlFor="capacity">Seats (up to 1,000)</Label>
+            <Input
+              type="number"
+              min="1"
+              max="1000"
+              id="capacity"
+              name="capacity"
+              value={formData.capacity}
+              onChange={handleFormDataChange}
+              required
+              placeholder="120"
+            />
+          </div>
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full bg-black text-white font-semibold py-2 px-4 rounded-md hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60"
-        >
-          {isSubmitting ? "Saving…" : "Add Venue"}
-        </button>
-      </form>
+          {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
 
-      <p className="py-2 text-black">Want to create an event now?</p>
-      <Link href="/createEvent">
-        <p className="text-black underline">Add Event</p>
-      </Link>
+          <Button type="submit" size="lg" disabled={isSubmitting} className="w-full">
+            {isSubmitting ? "Saving…" : "Add venue"}
+          </Button>
+        </form>
+
+        <p className="mt-6 text-center text-sm text-muted-foreground">
+          <Link href="/createEvent" className="font-medium text-primary-text hover:underline">
+            Back to creating an event
+          </Link>
+        </p>
+      </Card>
     </div>
   );
 }

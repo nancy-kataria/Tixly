@@ -1,9 +1,10 @@
 "use client";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { buttonClasses } from "@/components/ui/Button";
 
 // next: optional path to land on after sign-in (defaults to the home page).
-export default function GoogleSignInButton({ next }) {
+export default function GoogleSignInButton({ next, variant = "secondary" }) {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [error, setError] = useState("");
 
@@ -30,15 +31,15 @@ export default function GoogleSignInButton({ next }) {
   };
 
   return (
-    <>
+    <div>
       <button
         onClick={handleSignIn}
         disabled={isRedirecting}
-        className="w-full py-2 font-medium text-white bg-black rounded-md hover:bg-gray-800 disabled:opacity-60"
+        className={buttonClasses({ variant, size: "lg", className: "w-full" })}
       >
         {isRedirecting ? "Redirecting to Google…" : "Continue with Google"}
       </button>
-      {error && <p className="text-sm text-center text-red-600">{error}</p>}
-    </>
+      {error && <p role="alert" className="mt-2 text-center text-sm text-destructive">{error}</p>}
+    </div>
   );
 }
