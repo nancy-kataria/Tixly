@@ -48,7 +48,7 @@ export default async function OrderPage({ params, searchParams }) {
             <h1 className="text-3xl font-medium tracking-tight">Confirming your payment…</h1>
             <p className="mt-2 text-muted-foreground">This usually takes a few seconds.</p>
             <div className="mt-6">
-              <RefreshWhilePending />
+              <RefreshWhilePending orderId={order.id} />
             </div>
           </>
         )}

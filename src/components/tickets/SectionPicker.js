@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Check, Minus, Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useUser } from "@/context/UserContext";
+import { useEventAvailability } from "@/components/tickets/EventAvailability";
 import Button from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
 import { formatPrice } from "@/lib/format";
@@ -17,9 +18,10 @@ function availabilityLabel(count) {
 }
 
 // "Choose your tickets": pick a section and a quantity, then add them to
-// the cart, which holds them for 10 minutes.
-// sections: rows from the section_availability view.
-export default function SectionPicker({ sections, userId, hasStarted }) {
+// the cart, which holds them for 10 minutes. Counts come live from
+// EventAvailabilityProvider.
+export default function SectionPicker({ userId, hasStarted }) {
+  const { sections } = useEventAvailability();
   const router = useRouter();
   const { refreshCart } = useUser();
   const [selectedId, setSelectedId] = useState(null);

@@ -5,7 +5,9 @@ import { createClient } from "@/lib/supabase/server";
 import EventImage from "@/components/EventImage";
 import SectionPicker from "@/components/tickets/SectionPicker";
 import ResaleList from "@/components/tickets/ResaleList";
+import { EventAvailabilityProvider, LiveBadge, LiveTicketsLeft } from "@/components/tickets/EventAvailability";
 import Card from "@/components/ui/Card";
+import Detail from "@/components/ui/Detail";
 import Eyebrow from "@/components/ui/Eyebrow";
 import { buttonClasses } from "@/components/ui/Button";
 import { formatEventDate } from "@/lib/format";
@@ -63,47 +65,44 @@ export default async function EventPage({ params }) {
         .eq("owner_id", userId)
     : { count: 0 };
 
-  const capacity = sections.reduce((sum, s) => sum + s.capacity, 0);
-  const availableCount = sections.reduce((sum, s) => sum + s.available_count, 0);
-  const resaleCount = sections.reduce((sum, s) => sum + s.resale_count, 0);
-  const hasStarted = new Date(event.starts_at) <= new Date();
+  const hasStarted = new Date(event.starts_at) <= now;
 
   return (
     <div className="mx-auto grid max-w-7xl grid-cols-1 items-start gap-8 px-6 py-10 lg:grid-cols-[minmax(0,1fr)_22rem]">
-      <Card className="p-6 sm:p-8">
-        <Eyebrow>{event.category}</Eyebrow>
-        <h1 className="mt-2 text-4xl font-medium tracking-tight sm:text-5xl">{event.name}</h1>
-        <p className="mt-2 text-muted-foreground">
-          {event.venue?.name} · {formatEventDate(event.starts_at)}
-        </p>
+      <EventAvailabilityProvider eventId={event.id} initialSections={sections}>
+        <Card className="p-6 sm:p-8">
+          <Eyebrow>{event.category}</Eyebrow>
+          <h1 className="mt-2 text-4xl font-medium tracking-tight sm:text-5xl">{event.name}</h1>
+          <p className="mt-2 text-muted-foreground">
+            {event.venue?.name} · {formatEventDate(event.starts_at)}
+          </p>
 
-        <div className="relative mt-6 aspect-[16/7] overflow-hidden rounded-panel">
-          <EventImage event={event} priority sizes="(min-width: 1024px) 60vw, 100vw" />
-        </div>
+          <div className="relative mt-6 aspect-[16/7] overflow-hidden rounded-panel">
+            <EventImage event={event} priority sizes="(min-width: 1024px) 60vw, 100vw" />
+          </div>
 
-        <dl className="mt-6 grid gap-5 sm:grid-cols-3">
-          <Detail icon={Mic2} label="Performing" value={event.artist ?? "To be announced"} note={`Organized by ${event.organizer?.name}`} />
-          <Detail icon={MapPin} label="Venue" value={event.venue?.name} note={event.venue?.address} />
-          <Detail
-            icon={Ticket}
-            label="Tickets left"
-            value={`${availableCount.toLocaleString("en-US")} of ${capacity.toLocaleString("en-US")}`}
-            note={resaleCount > 0 ? `${resaleCount} on resale` : "No resale tickets yet"}
-          />
-        </dl>
+          <dl className="mt-6 grid gap-5 sm:grid-cols-3">
+            <Detail icon={Mic2} label="Performing" value={event.artist ?? "To be announced"} note={`Organized by ${event.organizer?.name}`} />
+            <Detail icon={MapPin} label="Venue" value={event.venue?.name} note={event.venue?.address} />
+            <LiveTicketsLeft />
+          </dl>
 
-        <h2 className="mt-10 text-2xl font-medium tracking-tight">Choose your tickets</h2>
-        {hasStarted && <p className="mt-1 text-sm text-muted-foreground">This event has already started.</p>}
-        <div className="mt-4">
-          <SectionPicker sections={sections} userId={userId} hasStarted={hasStarted} />
-        </div>
+          <div className="mt-10 flex flex-wrap items-center gap-3">
+            <h2 className="text-2xl font-medium tracking-tight">Choose your tickets</h2>
+            <LiveBadge />
+          </div>
+          {hasStarted && <p className="mt-1 text-sm text-muted-foreground">This event has already started.</p>}
+          <div className="mt-4">
+            <SectionPicker userId={userId} hasStarted={hasStarted} />
+          </div>
 
-        <h2 className="mt-10 text-2xl font-medium tracking-tight">Resale tickets</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Sold by other fans, at the price they set.</p>
-        <div className="mt-4">
-          <ResaleList listings={listings} userId={userId} />
-        </div>
-      </Card>
+          <h2 className="mt-10 text-2xl font-medium tracking-tight">Resale tickets</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Sold by other fans, at the price they set.</p>
+          <div className="mt-4">
+            <ResaleList listings={listings} userId={userId} />
+          </div>
+        </Card>
+      </EventAvailabilityProvider>
 
       <aside className="lg:sticky lg:top-24">
         <Card className="p-7">
@@ -133,19 +132,6 @@ export default async function EventPage({ params }) {
           </Link>
         </Card>
       </aside>
-    </div>
-  );
-}
-
-function Detail({ icon: Icon, label, value, note }) {
-  return (
-    <div className="flex gap-3">
-      <Icon className="mt-0.5 size-5 shrink-0 text-primary-text" aria-hidden />
-      <div className="min-w-0">
-        <dt className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</dt>
-        <dd className="mt-0.5 font-medium">{value}</dd>
-        {note && <dd className="text-sm text-muted-foreground">{note}</dd>}
-      </div>
     </div>
   );
 }

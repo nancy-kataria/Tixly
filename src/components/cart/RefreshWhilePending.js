@@ -3,29 +3,46 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
+import { subscribeToTopic } from "@/lib/realtime";
 
-const INTERVAL_MS = 2000;
-const MAX_ATTEMPTS = 30; // about a minute
+const FALLBACK_INTERVAL_MS = 5000;
+const MAX_FALLBACK_ATTEMPTS = 12; // about a minute
 
-// Re-fetches the order page every 2 seconds until Stripe's webhook has
-// confirmed the payment (the page then stops rendering this component).
-export default function RefreshWhilePending() {
+// Waits for Stripe's webhook to confirm the payment. The order's row change
+// arrives over a WebSocket (Supabase Realtime), and a slow refresh loop
+// backs it up in case the connection can't be made.
+export default function RefreshWhilePending({ orderId }) {
   const router = useRouter();
   const [gaveUp, setGaveUp] = useState(false);
 
   useEffect(() => {
+    const unsubscribe = subscribeToTopic(
+      `order:${orderId}`,
+      (channel, dispatch) =>
+        channel.on(
+          "postgres_changes",
+          { event: "UPDATE", schema: "public", table: "orders", filter: `id=eq.${orderId}` },
+          dispatch
+        ),
+      { onMessage: () => router.refresh() }
+    );
+
     let attempts = 0;
     const interval = setInterval(() => {
       attempts += 1;
-      if (attempts > MAX_ATTEMPTS) {
+      if (attempts > MAX_FALLBACK_ATTEMPTS) {
         clearInterval(interval);
         setGaveUp(true);
         return;
       }
       router.refresh();
-    }, INTERVAL_MS);
-    return () => clearInterval(interval);
-  }, [router]);
+    }, FALLBACK_INTERVAL_MS);
+
+    return () => {
+      clearInterval(interval);
+      unsubscribe();
+    };
+  }, [orderId, router]);
 
   if (gaveUp) {
     return (
