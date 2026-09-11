@@ -9,8 +9,8 @@ import { buttonClasses } from "@/components/ui/Button";
 
 const PERKS = [
   { icon: CalendarPlus, text: "Create events at your venues in a couple of minutes." },
-  { icon: Tags, text: "Split your venue into sections, each with its own price and capacity." },
-  { icon: Users, text: "Fans buy from you, then resell or transfer safely on Tixly." },
+  { icon: Tags, text: "Select prices for seats." },
+  { icon: Users, text: "Fans buy from you. No additional fee." },
 ];
 
 // Entry point for people who want to sell tickets: sign in, then one click

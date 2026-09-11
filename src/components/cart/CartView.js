@@ -166,13 +166,18 @@ export default function CartView({ tickets, checkoutCancelled }) {
         </p>
       )}
 
-      <Button size="lg" className="mt-6 w-full" onClick={handleCheckout} disabled={isCheckingOut}>
+      <div className="mt-6 rounded-panel border border-primary/40 bg-secondary/60 px-4 py-3 text-sm text-secondary-foreground">
+        <span className="mr-2 inline-block rounded-full bg-primary px-2 py-0.5 text-xs font-semibold uppercase tracking-wider text-primary-foreground">
+          Test mode
+        </span>
+        Stripe is in test mode, so no real money is charged. Pay with card{" "}
+        <span className="font-mono font-semibold">4242 4242 4242 4242</span>, any future expiry date and any CVC.
+      </div>
+
+      <Button size="lg" className="mt-4 w-full" onClick={handleCheckout} disabled={isCheckingOut}>
         <Lock className="size-4" aria-hidden />
         {isCheckingOut ? "Opening secure checkout…" : `Checkout · ${formatPrice(total)}`}
       </Button>
-      <p className="mt-3 text-center text-xs text-muted-foreground">
-        Payments are handled by Stripe in test mode. Use card 4242 4242 4242 4242; no real money is charged.
-      </p>
     </Card>
   );
 }
