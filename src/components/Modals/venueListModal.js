@@ -1,12 +1,10 @@
-import React from "react";
+import { MapPin, Users } from "lucide-react";
+import Modal from "@/components/ui/Modal";
 
 function VenueListModal({ venueList, onSelect, closeModal }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full text-gray-800 h-80 overflow-y-scroll">
-        <h2 className="text-xl font-semibold mb-4">
-          Select a Venue for your event
-        </h2>
+    <Modal title="Choose a venue" onClose={closeModal}>
+      <div className="-mx-1 max-h-80 space-y-2 overflow-y-auto px-1">
         {venueList.map((venue) => (
           <button
             type="button"
@@ -15,29 +13,19 @@ function VenueListModal({ venueList, onSelect, closeModal }) {
               onSelect(venue);
               closeModal();
             }}
-            className="w-full max-w-lg p-4 bg-white border border-gray-300 rounded-lg shadow-md flex items-center space-x-4 my-2 text-left hover:bg-gray-50"
+            className="w-full rounded-panel border border-surface-border bg-surface-strong p-4 text-left transition hover:border-primary hover:bg-white"
           >
-            {/* venue Details */}
-            <div>
-              <h2 className="text-lg font-bold text-gray-800">{venue.name}</h2>
-              <div className="text-gray-600 mt-2">
-                <p className="text-sm font-medium">📍 Address: {venue.address}</p>
-                <p className="text-sm font-medium">💺 Seats: {venue.capacity}</p>
-              </div>
-            </div>
+            <span className="block font-medium">{venue.name}</span>
+            <span className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
+              <MapPin className="size-4" aria-hidden /> {venue.address}
+            </span>
+            <span className="mt-0.5 flex items-center gap-2 text-sm text-muted-foreground">
+              <Users className="size-4" aria-hidden /> {venue.capacity} seats
+            </span>
           </button>
         ))}
-        <div className="flex justify-end space-x-4">
-          <button
-            type="button"
-            onClick={closeModal}
-            className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-          >
-            Close
-          </button>
-        </div>
       </div>
-    </div>
+    </Modal>
   );
 }
 

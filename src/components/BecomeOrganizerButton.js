@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useUser } from "@/context/UserContext";
+import Button from "@/components/ui/Button";
 
 export default function BecomeOrganizerButton() {
   const router = useRouter();
@@ -19,20 +20,16 @@ export default function BecomeOrganizerButton() {
       setIsSubmitting(false);
       return;
     }
-    await refreshUser(); // so the navbar shows "Create Event"
+    await refreshUser(); // so the navbar shows "Create event"
     router.push("/createEvent");
   };
 
   return (
     <div>
-      <button
-        onClick={handleClick}
-        disabled={isSubmitting}
-        className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 disabled:opacity-60"
-      >
+      <Button onClick={handleClick} disabled={isSubmitting}>
         {isSubmitting ? "Setting up…" : "Become an organizer"}
-      </button>
-      {error && <p className="text-sm text-red-600 mt-2">{error}</p>}
+      </Button>
+      {error && <p role="alert" className="mt-2 text-sm text-destructive">{error}</p>}
     </div>
   );
 }

@@ -1,7 +1,17 @@
 import Link from "next/link";
+import { CalendarPlus, Tags, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 import BecomeOrganizerButton from "@/components/BecomeOrganizerButton";
+import Card from "@/components/ui/Card";
+import Eyebrow from "@/components/ui/Eyebrow";
+import { buttonClasses } from "@/components/ui/Button";
+
+const PERKS = [
+  { icon: CalendarPlus, text: "Create events at your venues in a couple of minutes." },
+  { icon: Tags, text: "Set your ticket price. Tixly creates a ticket for every seat." },
+  { icon: Users, text: "Fans buy from you, then resell or transfer safely on Tixly." },
+];
 
 // Entry point for people who want to sell tickets: sign in, then one click
 // to become an organizer.
@@ -21,38 +31,44 @@ export default async function OrganizersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 text-gray-800 p-8 flex justify-center items-start">
-      <div className="max-w-xl w-full bg-white rounded-lg shadow-md p-8 space-y-4">
-        <h1 className="text-3xl font-bold">Sell tickets on Tixly</h1>
-        <p>
-          Create events at your venues and set a ticket price. Tixly creates a
-          ticket for every seat. Fans buy directly from you, and can resell or
-          transfer their tickets without leaving the platform.
-        </p>
+    <div className="mx-auto max-w-2xl px-6 py-16">
+      <Card className="p-8 sm:p-10">
+        <Eyebrow>For organizers</Eyebrow>
+        <h1 className="mt-2 text-4xl font-medium tracking-tight sm:text-5xl">Sell tickets on Tixly</h1>
 
-        {!userId && (
-          <>
-            <p className="text-gray-600">
-              Sign in first. You&apos;ll come straight back here to finish.
-            </p>
-            <GoogleSignInButton next="/organizers" />
-          </>
-        )}
+        <ul className="mt-8 space-y-4">
+          {PERKS.map(({ icon: Icon, text }) => (
+            <li key={text} className="flex items-start gap-4">
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-secondary text-primary-text">
+                <Icon className="size-5" aria-hidden />
+              </span>
+              <span className="pt-2 text-muted-foreground">{text}</span>
+            </li>
+          ))}
+        </ul>
 
-        {userId && role !== "organizer" && <BecomeOrganizerButton />}
+        <div className="mt-10 border-t border-border pt-8">
+          {!userId && (
+            <>
+              <p className="mb-4 text-sm text-muted-foreground">
+                Sign in first. You&apos;ll come straight back here to finish.
+              </p>
+              <GoogleSignInButton next="/organizers" variant="primary" />
+            </>
+          )}
 
-        {role === "organizer" && (
-          <>
-            <p className="text-green-700">You&apos;re an organizer.</p>
-            <Link
-              href="/createEvent"
-              className="inline-block px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
-            >
-              Create an event
-            </Link>
-          </>
-        )}
-      </div>
+          {userId && role !== "organizer" && <BecomeOrganizerButton />}
+
+          {role === "organizer" && (
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <p className="font-medium text-primary-text">You&apos;re an organizer.</p>
+              <Link href="/createEvent" className={buttonClasses()}>
+                Create an event
+              </Link>
+            </div>
+          )}
+        </div>
+      </Card>
     </div>
   );
 }

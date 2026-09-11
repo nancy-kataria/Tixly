@@ -5,10 +5,12 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useUser } from "@/context/UserContext";
 import VenueListModal from "@/components/Modals/venueListModal";
+import Card from "@/components/ui/Card";
+import Eyebrow from "@/components/ui/Eyebrow";
+import Button, { buttonClasses } from "@/components/ui/Button";
+import Input, { Label } from "@/components/ui/Input";
 
 const CATEGORIES = ["music", "sports", "comedy", "theater"];
-const inputClass =
-  "w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800";
 
 export default function CreateEvent() {
   const router = useRouter();
@@ -71,137 +73,130 @@ export default function CreateEvent() {
   };
 
   if (isUserLoading) {
-    return <p className="p-8 text-gray-600">Loading…</p>;
+    return <p className="px-6 py-16 text-center text-muted-foreground">Loading…</p>;
   }
 
   if (user?.role !== "organizer") {
     return (
-      <div className="max-w-lg mx-auto my-10 bg-white p-8 rounded-lg shadow-md text-gray-800 space-y-4">
-        <h2 className="text-2xl font-semibold">Only organizers can create events</h2>
-        <Link href="/organizers" className="underline">
-          Become an organizer
-        </Link>
+      <div className="mx-auto max-w-lg px-6 py-16">
+        <Card className="p-8 text-center">
+          <h1 className="text-2xl font-medium tracking-tight">Only organizers can create events</h1>
+          <Link href="/organizers" className={buttonClasses({ className: "mt-6" })}>
+            Become an organizer
+          </Link>
+        </Card>
       </div>
     );
   }
 
   return (
-    <>
-      <div className="max-w-lg mx-auto my-10 bg-white p-8 rounded-lg shadow-md">
-        <h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">
-          Add Event
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="mx-auto max-w-2xl px-6 py-10">
+      <Card className="p-8 sm:p-10">
+        <Eyebrow>Organizer</Eyebrow>
+        <h1 className="mt-1 text-4xl font-medium tracking-tight">Create an event</h1>
+
+        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           <div>
-            <label className="block text-gray-700 font-medium mb-1" htmlFor="eventName">
-              Event Name
-            </label>
-            <input
-              type="text"
+            <Label htmlFor="eventName">Event name</Label>
+            <Input
               id="eventName"
               name="eventName"
               value={formData.eventName}
               onChange={handleFormDataChange}
               required
-              className={inputClass}
-              placeholder="Enter Event name"
+              placeholder="Neon Tides: Summer's End Tour"
             />
           </div>
 
           <div>
-            <label className="block text-gray-700 font-medium mb-1" htmlFor="eventArtist">
-              Artist / Performer
-            </label>
-            <input
-              type="text"
+            <Label htmlFor="eventArtist">Artist or performer</Label>
+            <Input
               id="eventArtist"
               name="eventArtist"
               value={formData.eventArtist}
               onChange={handleFormDataChange}
-              className={inputClass}
-              placeholder="Enter Artist Name"
+              placeholder="Optional"
             />
           </div>
 
-          <p className="text-gray-700">Choose a Category for your event:</p>
-          <div className="flex flex-col space-y-2">
-            {CATEGORIES.map((category) => (
-              <label key={category} className="flex items-center text-gray-700 capitalize">
-                <input
-                  type="radio"
-                  name="eventCategory"
-                  value={category}
-                  checked={formData.eventCategory === category}
-                  onChange={handleFormDataChange}
-                  className="mr-2"
-                />
-                {category}
-              </label>
-            ))}
-          </div>
+          <fieldset>
+            <legend className="mb-1.5 text-sm font-medium">Category</legend>
+            <div className="flex flex-wrap gap-2">
+              {CATEGORIES.map((category) => (
+                <label
+                  key={category}
+                  className="cursor-pointer rounded-full border border-surface-border bg-surface-strong px-4 py-1.5 text-sm capitalize transition hover:bg-white has-[:checked]:border-transparent has-[:checked]:bg-primary has-[:checked]:text-primary-foreground has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring"
+                >
+                  <input
+                    type="radio"
+                    name="eventCategory"
+                    value={category}
+                    checked={formData.eventCategory === category}
+                    onChange={handleFormDataChange}
+                    className="sr-only"
+                  />
+                  {category}
+                </label>
+              ))}
+            </div>
+          </fieldset>
 
-          <button
-            type="button"
-            onClick={openModal}
-            className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
-          >
-            {selectedVenue ? "Change venue" : "Click to select a Venue"}
-          </button>
-          {selectedVenue && (
-            <p className="mt-2 text-sm text-gray-600">
-              Selected Venue: <span className="font-medium">{selectedVenue.name}</span> (
-              {selectedVenue.capacity} seats)
+          <div>
+            <p className="mb-1.5 text-sm font-medium">Venue</p>
+            <div className="flex flex-wrap items-center gap-3">
+              <Button variant="outline" onClick={openModal}>
+                {selectedVenue ? "Change venue" : "Choose a venue"}
+              </Button>
+              {selectedVenue && (
+                <span className="text-sm text-muted-foreground">
+                  <span className="font-medium text-foreground">{selectedVenue.name}</span> ·{" "}
+                  {selectedVenue.capacity} seats
+                </span>
+              )}
+            </div>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Can&apos;t find your venue?{" "}
+              <Link href="/createVenue" className="font-medium text-primary-text hover:underline">
+                Add a venue
+              </Link>
             </p>
-          )}
-
-          <div>
-            <label className="block text-gray-700 font-medium mb-1" htmlFor="ticketPrice">
-              Ticket Price (USD)
-            </label>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              id="ticketPrice"
-              name="ticketPrice"
-              value={formData.ticketPrice}
-              onChange={handleFormDataChange}
-              required
-              className={inputClass}
-              placeholder="Enter Ticket Price"
-            />
-          </div>
-          <div>
-            <label htmlFor="date-input" className="block text-gray-700 font-medium mb-1">
-              Date and time
-            </label>
-            <input
-              id="date-input"
-              type="datetime-local"
-              name="eventDate"
-              value={formData.eventDate}
-              onChange={handleFormDataChange}
-              required
-              className={inputClass}
-            />
           </div>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          <div className="grid gap-6 sm:grid-cols-2">
+            <div>
+              <Label htmlFor="ticketPrice">Ticket price (USD)</Label>
+              <Input
+                type="number"
+                min="0"
+                step="0.01"
+                id="ticketPrice"
+                name="ticketPrice"
+                value={formData.ticketPrice}
+                onChange={handleFormDataChange}
+                required
+                placeholder="45"
+              />
+            </div>
+            <div>
+              <Label htmlFor="date-input">Date and time</Label>
+              <Input
+                id="date-input"
+                type="datetime-local"
+                name="eventDate"
+                value={formData.eventDate}
+                onChange={handleFormDataChange}
+                required
+              />
+            </div>
+          </div>
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full bg-black text-white font-semibold py-2 px-4 rounded-md hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60"
-          >
-            {isSubmitting ? "Creating…" : "Add Event"}
-          </button>
+          {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+
+          <Button type="submit" size="lg" disabled={isSubmitting} className="w-full">
+            {isSubmitting ? "Creating…" : "Create event"}
+          </Button>
         </form>
-
-        <p className="py-2 text-black">Couldn&apos;t find your desired venue in the list?</p>
-        <Link href="/createVenue">
-          <p className="text-black underline">Add Venue</p>
-        </Link>
-      </div>
+      </Card>
 
       {isModalOpen && (
         <VenueListModal
@@ -210,6 +205,6 @@ export default function CreateEvent() {
           closeModal={() => setIsModalOpen(false)}
         />
       )}
-    </>
+    </div>
   );
 }

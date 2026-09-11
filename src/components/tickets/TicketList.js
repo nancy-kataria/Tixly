@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import ListTicketModal from "../Modals/ListTicketModal";
 import TransferTicketModal from "../Modals/TransferTicketModal";
+import Button from "@/components/ui/Button";
+import { cn } from "@/lib/cn";
 import { formatEventDate, formatPrice } from "@/lib/format";
 
 // tickets: [{ id, seat_number, price_cents, status, list_price_cents, owner_id,
@@ -63,131 +65,123 @@ export default function TicketList({ tickets, userId, viewType = "event" }) {
   };
 
   if (tickets.length === 0) {
-    return <p className="text-sm font-medium">No Tickets yet</p>;
+    return <p className="text-sm text-muted-foreground">No tickets yet.</p>;
   }
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-gray-800 mt-1 text-xl font-bold">Tickets</h2>
-        <div>
-          <label htmlFor="sort" className="text-gray-600 mt-1">
-            Sort By:{" "}
-          </label>
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <p className="text-sm text-muted-foreground">
+          {tickets.length} {tickets.length === 1 ? "ticket" : "tickets"}
+        </p>
+        <label className="flex items-center gap-2 text-sm text-muted-foreground">
+          Sort by
           <select
-            id="sort"
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="text-gray-600 mt-1"
+            className="h-9 rounded-full border border-input bg-surface-strong px-3 text-foreground"
           >
             <option value="status">Status</option>
-            <option value="seatNumber">Seat Number</option>
+            <option value="seatNumber">Seat number</option>
           </select>
-        </div>
+        </label>
       </div>
 
       {error && (
-        <p className="mb-4 p-3 rounded bg-red-50 text-red-700 text-sm">{error}</p>
+        <p role="alert" className="mb-4 rounded-panel bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {error}
+        </p>
       )}
 
-      {ticketGroups.map(({ event, tickets: groupTickets }) => (
-        <div key={event?.id ?? "all"} className="mt-6 bg-white rounded-lg p-4 shadow-md">
-          {event && (
-            <Link
-              href={`/event/${event.id}`}
-              className="block text-gray-800 underline text-lg font-semibold mb-4 hover:text-blue-700"
-            >
-              {event.name} · {formatEventDate(event.starts_at)}
-            </Link>
-          )}
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
-            {groupTickets.map((ticket) => {
-              const isMine = Boolean(userId) && ticket.owner_id === userId;
-              const isPending = pendingTicketId === ticket.id;
-              const buttonClass =
-                "mt-2 w-full px-2 py-1 rounded text-sm text-white disabled:opacity-60";
+      <div className="space-y-8">
+        {ticketGroups.map(({ event, tickets: groupTickets }) => (
+          <div key={event?.id ?? "all"}>
+            {event && (
+              <Link href={`/event/${event.id}`} className="mb-3 inline-block font-medium hover:text-primary-text">
+                {event.name}{" "}
+                <span className="font-normal text-muted-foreground">· {formatEventDate(event.starts_at)}</span>
+              </Link>
+            )}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6">
+              {groupTickets.map((ticket) => {
+                const isMine = Boolean(userId) && ticket.owner_id === userId;
+                const isPending = pendingTicketId === ticket.id;
 
-              return (
-                <div
-                  key={ticket.id}
-                  className={`text-gray-600 mt-1 rounded shadow-md flex flex-col items-center p-2 ${
-                    isMine ? "ring-2 ring-blue-400" : ""
-                  }`}
-                >
-                  <span className="text-lg font-semibold">
-                    Seat {ticket.seat_number}
-                  </span>
-
-                  {ticket.status === "listed" ? (
-                    <span className="mt-1 text-sm">
-                      {formatPrice(ticket.list_price_cents)}{" "}
-                      <span className="text-xs text-blue-600">resale</span>
+                return (
+                  <div
+                    key={ticket.id}
+                    className={cn(
+                      "flex flex-col rounded-panel border bg-surface-strong p-3",
+                      isMine ? "border-primary ring-2 ring-primary/30" : "border-surface-border"
+                    )}
+                  >
+                    <div className="flex items-baseline justify-between gap-2">
+                      <span className="font-semibold">Seat {ticket.seat_number}</span>
+                      {isMine && (
+                        <span className="text-[11px] font-semibold uppercase tracking-wider text-primary-text">
+                          Yours
+                        </span>
+                      )}
+                    </div>
+                    <span className="mt-0.5 text-sm text-muted-foreground">
+                      {ticket.status === "listed" ? (
+                        <>
+                          {formatPrice(ticket.list_price_cents)}{" "}
+                          <span className="text-primary-text">resale</span>
+                        </>
+                      ) : (
+                        formatPrice(ticket.price_cents)
+                      )}
                     </span>
-                  ) : (
-                    <span className="mt-1 text-sm">{formatPrice(ticket.price_cents)}</span>
-                  )}
-                  {isMine && <span className="text-xs text-blue-600">Your ticket</span>}
 
-                  {/* Unsold, or listed by someone else: "Buy" */}
-                  {(ticket.status === "available" ||
-                    (ticket.status === "listed" && !isMine)) && (
-                    <button
-                      disabled={isPending}
-                      onClick={() =>
-                        handleAction(ticket.id, "buy_ticket", { p_ticket_id: ticket.id })
-                      }
-                      className={`${buttonClass} bg-green-500`}
-                    >
-                      {isPending ? "…" : "Buy"}
-                    </button>
-                  )}
-                  {/* Yours and not listed: "Sell" */}
-                  {ticket.status === "sold" && isMine && (
-                    <button
-                      disabled={isPending}
-                      onClick={() => setModal({ type: "list", ticket })}
-                      className={`${buttonClass} bg-yellow-500`}
-                    >
-                      Sell
-                    </button>
-                  )}
-                  {/* Yours and listed: "Cancel" the listing */}
-                  {ticket.status === "listed" && isMine && (
-                    <button
-                      disabled={isPending}
-                      onClick={() =>
-                        handleAction(ticket.id, "unlist_ticket", { p_ticket_id: ticket.id })
-                      }
-                      className={`${buttonClass} bg-red-500`}
-                    >
-                      {isPending ? "…" : "Cancel sale"}
-                    </button>
-                  )}
-                  {/* Yours: "Transfer" to another user */}
-                  {isMine && (
-                    <button
-                      disabled={isPending}
-                      onClick={() => setModal({ type: "transfer", ticket })}
-                      className={`${buttonClass} bg-yellow-600`}
-                    >
-                      Transfer
-                    </button>
-                  )}
-                  {/* Owned by someone else and not for sale */}
-                  {ticket.status === "sold" && !isMine && (
-                    <button
-                      disabled
-                      className={`${buttonClass} bg-gray-500 cursor-not-allowed`}
-                    >
-                      Unavailable
-                    </button>
-                  )}
-                </div>
-              );
-            })}
+                    <div className="mt-3 flex flex-col gap-1.5">
+                      {/* Unsold, or listed by someone else: "Buy" */}
+                      {(ticket.status === "available" || (ticket.status === "listed" && !isMine)) && (
+                        <Button
+                          size="sm"
+                          disabled={isPending}
+                          onClick={() => handleAction(ticket.id, "buy_ticket", { p_ticket_id: ticket.id })}
+                        >
+                          {isPending ? "Buying…" : "Buy"}
+                        </Button>
+                      )}
+                      {/* Yours and not listed: "Sell" */}
+                      {ticket.status === "sold" && isMine && (
+                        <Button size="sm" variant="outline" disabled={isPending} onClick={() => setModal({ type: "list", ticket })}>
+                          Sell
+                        </Button>
+                      )}
+                      {/* Yours and listed: cancel the listing */}
+                      {ticket.status === "listed" && isMine && (
+                        <Button
+                          size="sm"
+                          variant="danger"
+                          disabled={isPending}
+                          onClick={() => handleAction(ticket.id, "unlist_ticket", { p_ticket_id: ticket.id })}
+                        >
+                          {isPending ? "Cancelling…" : "Cancel sale"}
+                        </Button>
+                      )}
+                      {/* Yours: transfer to another user */}
+                      {isMine && (
+                        <Button size="sm" variant="outline" disabled={isPending} onClick={() => setModal({ type: "transfer", ticket })}>
+                          Transfer
+                        </Button>
+                      )}
+                      {/* Owned by someone else and not for sale */}
+                      {ticket.status === "sold" && !isMine && (
+                        <Button size="sm" variant="outline" disabled>
+                          Sold
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
 
       {modal?.type === "list" && (
         <ListTicketModal

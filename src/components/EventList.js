@@ -1,44 +1,46 @@
 import Link from "next/link";
-import Image from "next/image";
-import concert from "../../public/concert.jpg";
-import { formatEventDate } from "@/lib/format";
+import { ArrowRight, CalendarDays, MapPin } from "lucide-react";
+import EventImage from "@/components/EventImage";
+import Card from "@/components/ui/Card";
+import Eyebrow from "@/components/ui/Eyebrow";
+import { formatDay, priceLabel } from "@/lib/format";
 
-// events: [{ id, name, category, starts_at, venue: { name } }]
+// events: rows from the event_summaries view
 export default function EventList({ events, emptyMessage = "No events yet" }) {
   if (!events || events.length === 0) {
-    return <p className="text-sm font-medium">{emptyMessage}</p>;
+    return <p className="text-sm text-muted-foreground">{emptyMessage}</p>;
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-5">
+    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
       {events.map((event) => (
-        <Link
-          key={event.id}
-          href={`/event/${event.id}`}
-          className="w-full max-w-lg p-4 bg-white border border-gray-300 rounded-lg shadow-md hover:shadow-lg transition-shadow text-left"
-        >
-          {/* Event Image */}
-          <Image
-            src={concert}
-            alt="concert-image"
-            className="w-100 h-100 rounded-lg object-cover"
-          />
-
-          {/* Event Details */}
-          <div className="mt-2">
-            <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-              {event.category}
-            </span>
-            <h2 className="text-xl font-bold text-gray-800">{event.name}</h2>
-
-            {/* Date and Venue */}
-            <div className="text-gray-600 mt-2">
-              <p className="text-sm font-medium">
-                📅 {formatEventDate(event.starts_at)}
-              </p>
-              <p className="text-sm font-medium">📍 {event.venue?.name}</p>
+        <Link key={event.id} href={`/event/${event.id}`} className="group">
+          <Card className="flex h-full flex-col p-3 transition duration-300 group-hover:-translate-y-1">
+            {/* Event Image */}
+            <div className="relative aspect-[4/3] overflow-hidden rounded-panel">
+              <EventImage
+                event={event}
+                sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                className="transition duration-500 group-hover:scale-105"
+              />
             </div>
-          </div>
+
+            {/* Event Details */}
+            <div className="flex flex-1 flex-col px-2 pb-2 pt-4">
+              <Eyebrow>{event.category}</Eyebrow>
+              <h3 className="mt-1 text-2xl font-medium leading-tight tracking-tight">{event.name}</h3>
+              <p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+                <CalendarDays className="size-4 shrink-0" aria-hidden /> {formatDay(event.starts_at)}
+              </p>
+              <p className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
+                <MapPin className="size-4 shrink-0" aria-hidden /> {event.venue_name}
+              </p>
+              <div className="mt-auto flex items-center justify-between pt-5">
+                <span className="font-semibold">{priceLabel(event.from_price_cents)}</span>
+                <ArrowRight className="size-5 transition group-hover:translate-x-1" aria-hidden />
+              </div>
+            </div>
+          </Card>
         </Link>
       ))}
     </div>

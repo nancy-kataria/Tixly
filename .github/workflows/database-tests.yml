@@ -1,0 +1,25 @@
+name: Database tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.117.0 # keep in sync with the supabase devDependency
+
+      # Starts a throwaway Supabase database, then applies
+      # supabase/migrations and supabase/seed.sql.
+      - run: supabase db start
+
+      # Runs the pgTAP tests in supabase/tests.
+      - run: supabase test db
