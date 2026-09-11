@@ -70,13 +70,13 @@ begin
 end;
 $$;
 
-create or replace function tests.create_venue(p_name text, p_seats int)
+create or replace function tests.create_venue(p_name text, p_capacity int)
 returns uuid
 language sql
 security definer set search_path = ''
 as $$
   insert into public.venues (name, address, capacity)
-  values (p_name, '1 Test St', p_seats)
+  values (p_name, '1 Test St', p_capacity)
   returning id
 $$;
 
@@ -88,13 +88,45 @@ as $$
   select id from public.venues where name = p_name
 $$;
 
--- An event with one ticket per seat. Inserted directly, skipping
--- create_event()'s checks, so tests can set up any scenario (e.g. an event
--- that has already started).
+-- Adds a section with p_capacity tickets, numbered from 1, to an event.
+create or replace function tests.add_section(
+  p_event_name text,
+  p_section_name text,
+  p_capacity int,
+  p_price_cents int
+)
+returns uuid
+language plpgsql
+security definer set search_path = ''
+as $$
+declare
+  v_event_id uuid;
+  v_section_id uuid;
+begin
+  select id into strict v_event_id from public.events where name = p_event_name;
+
+  insert into public.ticket_sections (event_id, name, price_cents, capacity, sort_order)
+  values (
+    v_event_id, p_section_name, p_price_cents, p_capacity,
+    (select count(*) from public.ticket_sections where event_id = v_event_id) + 1
+  )
+  returning id into v_section_id;
+
+  insert into public.tickets (event_id, section_id, number, price_cents)
+  select v_event_id, v_section_id, n, p_price_cents
+  from generate_series(1, p_capacity) as n;
+
+  return v_section_id;
+end;
+$$;
+
+-- An event at a new venue with one section, 'General', of p_capacity
+-- tickets. Inserted directly, skipping create_event()'s checks, so tests can
+-- set up any scenario (e.g. an event that has already started).
 create or replace function tests.create_event(
   p_name text,
   p_organizer text,
-  p_seats int default 3,
+  p_capacity int default 3,
   p_price_cents int default 5000,
   p_starts_at timestamptz default now() + interval '30 days'
 )
@@ -108,42 +140,75 @@ begin
   insert into public.events (organizer_id, venue_id, name, category, starts_at)
   values (
     tests.user_id(p_organizer),
-    tests.create_venue(p_name || ' Venue', p_seats),
+    tests.create_venue(p_name || ' Venue', p_capacity),
     p_name,
     'music',
     p_starts_at
   )
   returning id into v_event_id;
 
-  insert into public.tickets (event_id, seat_number, price_cents)
-  select v_event_id, seat, p_price_cents
-  from generate_series(1, p_seats) as seat;
-
+  perform tests.add_section(p_name, 'General', p_capacity, p_price_cents);
   return v_event_id;
 end;
 $$;
 
-create or replace function tests.ticket_id(p_event_name text, p_seat int)
+create or replace function tests.section_id(p_event_name text, p_section_name text default 'General')
 returns uuid
 language sql stable
 security definer set search_path = ''
 as $$
-  select t.id
-  from public.tickets t
-  join public.events e on e.id = t.event_id
-  where e.name = p_event_name and t.seat_number = p_seat
+  select s.id
+  from public.ticket_sections s
+  join public.events e on e.id = s.event_id
+  where e.name = p_event_name and s.name = p_section_name
+$$;
+
+create or replace function tests.ticket_id(p_event_name text, p_number int, p_section_name text default 'General')
+returns uuid
+language sql stable
+security definer set search_path = ''
+as $$
+  select id
+  from public.tickets
+  where section_id = tests.section_id(p_event_name, p_section_name) and number = p_number
 $$;
 
 -- The full ticket row, read without access rules, for checking results.
-create or replace function tests.ticket(p_event_name text, p_seat int)
+create or replace function tests.ticket(p_event_name text, p_number int, p_section_name text default 'General')
 returns public.tickets
 language sql stable
 security definer set search_path = ''
 as $$
-  select t.*
-  from public.tickets t
-  join public.events e on e.id = t.event_id
-  where e.name = p_event_name and t.seat_number = p_seat
+  select *
+  from public.tickets
+  where section_id = tests.section_id(p_event_name, p_section_name) and number = p_number
+$$;
+
+-- The user's unpaid order, if any.
+create or replace function tests.pending_order(p_user text)
+returns uuid
+language sql stable
+security definer set search_path = ''
+as $$
+  select id from public.orders where buyer_id = tests.user_id(p_user) and status = 'pending'
+$$;
+
+-- Checks out the current user's cart and pays for it, the way the Stripe
+-- webhook does after a successful payment. Returns the order id.
+create or replace function tests.pay_for_cart()
+returns uuid
+language plpgsql
+security definer set search_path = ''
+as $$
+declare
+  v_order_id uuid;
+  v_total int;
+begin
+  select o.order_id, o.total_cents into v_order_id, v_total from public.create_order() as o;
+  update public.orders set stripe_session_id = 'cs_test_' || v_order_id where id = v_order_id;
+  perform public.complete_order(v_order_id, 'cs_test_' || v_order_id, 'pi_test_' || v_order_id, v_total);
+  return v_order_id;
+end;
 $$;
 
 grant usage on schema tests to anon, authenticated;

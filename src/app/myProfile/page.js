@@ -9,7 +9,7 @@ import BecomeOrganizerButton from "@/components/BecomeOrganizerButton";
 import Card from "@/components/ui/Card";
 import Eyebrow from "@/components/ui/Eyebrow";
 import { buttonClasses } from "@/components/ui/Button";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, ticketLabel } from "@/lib/format";
 
 function describeTransaction(transaction, userId) {
   const received = transaction.to_user === userId;
@@ -34,12 +34,12 @@ export default async function MyProfile() {
     supabase.from("profiles").select("name, role, avatar_url").eq("id", userId).single(),
     supabase
       .from("tickets")
-      .select("id, seat_number, price_cents, status, list_price_cents, owner_id, event:events(id, name, starts_at)")
+      .select("id, number, price_cents, status, list_price_cents, section:ticket_sections(name), event:events(id, name, starts_at)")
       .eq("owner_id", userId),
     // RLS limits this to transactions the user is part of.
     supabase
       .from("ticket_transactions")
-      .select("id, kind, price_cents, created_at, from_user, to_user, ticket:tickets(seat_number, event:events(id, name))")
+      .select("id, kind, price_cents, created_at, from_user, to_user, ticket:tickets(number, section:ticket_sections(name), event:events(id, name))")
       .order("created_at", { ascending: false }),
   ]);
 
@@ -84,7 +84,7 @@ export default async function MyProfile() {
 
       <Card as="section" className="p-6 sm:p-8">
         <h2 className="mb-5 text-3xl font-medium tracking-tight">Your tickets</h2>
-        <TicketList tickets={ticketsResult.data ?? []} userId={userId} viewType="user" />
+        <TicketList tickets={ticketsResult.data ?? []} />
       </Card>
 
       {/*Transaction List */}
@@ -99,7 +99,7 @@ export default async function MyProfile() {
                 <tr className="border-b border-border">
                   <th className="py-3 pr-4 font-semibold">Date</th>
                   <th className="py-3 pr-4 font-semibold">Event</th>
-                  <th className="py-3 pr-4 font-semibold">Seat</th>
+                  <th className="py-3 pr-4 font-semibold">Ticket</th>
                   <th className="py-3 pr-4 font-semibold">What happened</th>
                   <th className="py-3 text-right font-semibold">Price</th>
                 </tr>
@@ -115,7 +115,7 @@ export default async function MyProfile() {
                         {transaction.ticket.event.name}
                       </Link>
                     </td>
-                    <td className="py-3 pr-4">{transaction.ticket.seat_number}</td>
+                    <td className="py-3 pr-4">{ticketLabel(transaction.ticket)}</td>
                     <td className="py-3 pr-4">{describeTransaction(transaction, userId)}</td>
                     <td className="py-3 text-right font-medium">
                       {transaction.price_cents === null ? "—" : formatPrice(transaction.price_cents)}

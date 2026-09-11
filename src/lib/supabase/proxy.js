@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 
 // Pages that require a signed-in user. Everything else is public.
-const PROTECTED_PATHS = ["/myProfile", "/createEvent", "/createVenue"];
+const PROTECTED_PATHS = ["/myProfile", "/createEvent", "/createVenue", "/cart", "/orders"];
 
 // Refreshes the Supabase session cookie on every request and redirects
 // signed-out users away from protected pages.

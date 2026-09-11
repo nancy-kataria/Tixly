@@ -9,7 +9,7 @@ import { buttonClasses } from "@/components/ui/Button";
 
 const PERKS = [
   { icon: CalendarPlus, text: "Create events at your venues in a couple of minutes." },
-  { icon: Tags, text: "Set your ticket price. Tixly creates a ticket for every seat." },
+  { icon: Tags, text: "Split your venue into sections, each with its own price and capacity." },
   { icon: Users, text: "Fans buy from you, then resell or transfer safely on Tixly." },
 ];
 

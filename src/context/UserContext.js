@@ -6,6 +6,7 @@ const UserContext = createContext(null);
 export function UserProvider({children}){
     const supabase = useMemo(() => createClient(), []);
     const [user, setUser] = useState(null);
+    const [cartCount, setCartCount] = useState(0);
     const [isLoading, setIsLoading]= useState(true);
 
     // Combines the Supabase auth user with their row in public.profiles.
@@ -35,9 +36,27 @@ export function UserProvider({children}){
         }
       }, [supabase]);
 
+    // How many tickets are held in the user's cart right now.
+    const loadCartCount = useCallback(async (userId) => {
+        if (!userId) return 0;
+        const { count, error } = await supabase
+          .from("tickets")
+          .select("id", { count: "exact", head: true })
+          .eq("held_by", userId)
+          .gt("held_until", new Date().toISOString());
+        if (error) console.error("Failed to fetch cart:", error);
+        return count ?? 0;
+      }, [supabase]);
+
     const refreshUser = useCallback(async () => {
-        setUser(await loadUser());
-      }, [loadUser]);
+        const loadedUser = await loadUser();
+        setUser(loadedUser);
+        setCartCount(await loadCartCount(loadedUser?.id));
+      }, [loadUser, loadCartCount]);
+
+    const refreshCart = useCallback(async () => {
+        setCartCount(await loadCartCount(user?.id));
+      }, [loadCartCount, user?.id]);
 
     // Returns true if sign-out succeeded.
     const signOut = useCallback(async () => {
@@ -47,20 +66,27 @@ export function UserProvider({children}){
           return false;
         }
         setUser(null);
+        setCartCount(0);
         return true;
       }, [supabase]);
 
         useEffect(() => {
             let ignore = false;
-            loadUser().then((loadedUser) => {
+            loadUser().then(async (loadedUser) => {
+              const count = await loadCartCount(loadedUser?.id);
               if (ignore) return;
               setUser(loadedUser);
+              setCartCount(count);
               setIsLoading(false);
             });
             return () => { ignore = true; };
-          }, [loadUser]);
+          }, [loadUser, loadCartCount]);
 
-    return (<UserContext.Provider value={{ user, refreshUser, signOut, isLoading }}>{children}</UserContext.Provider>);
+    return (
+      <UserContext.Provider value={{ user, cartCount, refreshUser, refreshCart, signOut, isLoading }}>
+        {children}
+      </UserContext.Provider>
+    );
 }
 
 export function useUser(){

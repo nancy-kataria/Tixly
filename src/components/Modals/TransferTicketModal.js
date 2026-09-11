@@ -3,6 +3,7 @@ import { useState } from "react";
 import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
 import Input, { Label } from "@/components/ui/Input";
+import { ticketLabel } from "@/lib/format";
 
 // Asks for the recipient's email. onConfirm(email) resolves to an error
 // message, or null on success.
@@ -23,7 +24,7 @@ export default function TransferTicketModal({ ticket, onConfirm, onClose }) {
 
   return (
     <Modal
-      title={`Transfer seat ${ticket.seat_number}`}
+      title={`Transfer ${ticketLabel(ticket)}`}
       description="The ticket moves to the Tixly account with this email. If it's listed for sale, the listing is cancelled."
       onClose={onClose}
     >

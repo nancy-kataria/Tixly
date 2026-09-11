@@ -1,47 +1,24 @@
 // components/TicketList.js
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import ListTicketModal from "../Modals/ListTicketModal";
 import TransferTicketModal from "../Modals/TransferTicketModal";
 import Button from "@/components/ui/Button";
-import { cn } from "@/lib/cn";
-import { formatEventDate, formatPrice } from "@/lib/format";
+import { formatEventDate, formatPrice, ticketLabel } from "@/lib/format";
 
-// tickets: [{ id, seat_number, price_cents, status, list_price_cents, owner_id,
-//             event?: { id, name, starts_at } }]  (event is needed for viewType "user")
-export default function TicketList({ tickets, userId, viewType = "event" }) {
+// The signed-in user's own tickets, grouped by event, with sell, cancel and
+// transfer actions.
+// tickets: [{ id, number, price_cents, status, list_price_cents,
+//             section: { name }, event: { id, name, starts_at } }]
+export default function TicketList({ tickets }) {
   const router = useRouter();
-  const [sortBy, setSortBy] = useState("status");
   const [modal, setModal] = useState(null); // { type: "list" | "transfer", ticket }
   const [pendingTicketId, setPendingTicketId] = useState(null);
   const [error, setError] = useState("");
-
-  //Sorts the Tickets
-  const sortedTickets = useMemo(
-    () =>
-      [...tickets].sort((a, b) =>
-        sortBy === "seatNumber"
-          ? a.seat_number - b.seat_number
-          : a.status.localeCompare(b.status) || a.seat_number - b.seat_number
-      ),
-    [tickets, sortBy]
-  );
-
-  //Groups tickets by the event
-  const ticketGroups =
-    viewType === "user"
-      ? Object.values(
-          sortedTickets.reduce((groups, ticket) => {
-            groups[ticket.event.id] ??= { event: ticket.event, tickets: [] };
-            groups[ticket.event.id].tickets.push(ticket);
-            return groups;
-          }, {})
-        )
-      : [{ event: null, tickets: sortedTickets }];
 
   // Calls one of the ticket database functions, then re-fetches the page's
   // data. Resolves to an error message, or null on success.
@@ -54,39 +31,40 @@ export default function TicketList({ tickets, userId, viewType = "event" }) {
     return null;
   };
 
-  const handleAction = async (ticketId, fn, args) => {
-    if (!userId) {
-      router.push("/login");
-      return;
-    }
+  const handleCancelSale = async (ticketId) => {
     setError("");
-    const message = await runAction(ticketId, fn, args);
+    const message = await runAction(ticketId, "unlist_ticket", { p_ticket_id: ticketId });
     if (message) setError(message);
   };
 
   if (tickets.length === 0) {
-    return <p className="text-sm text-muted-foreground">No tickets yet.</p>;
+    return (
+      <p className="text-sm text-muted-foreground">
+        No tickets yet.{" "}
+        <Link href="/#events" className="font-medium text-primary-text hover:underline">
+          Find an event
+        </Link>
+      </p>
+    );
   }
+
+  // Soonest event first; within an event, by section, then ticket number.
+  const sortedTickets = [...tickets].sort(
+    (a, b) =>
+      a.event.starts_at.localeCompare(b.event.starts_at) ||
+      a.section.name.localeCompare(b.section.name) ||
+      a.number - b.number
+  );
+  const ticketGroups = Object.values(
+    sortedTickets.reduce((groups, ticket) => {
+      groups[ticket.event.id] ??= { event: ticket.event, tickets: [] };
+      groups[ticket.event.id].tickets.push(ticket);
+      return groups;
+    }, {})
+  );
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between gap-4">
-        <p className="text-sm text-muted-foreground">
-          {tickets.length} {tickets.length === 1 ? "ticket" : "tickets"}
-        </p>
-        <label className="flex items-center gap-2 text-sm text-muted-foreground">
-          Sort by
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="h-9 rounded-full border border-input bg-surface-strong px-3 text-foreground"
-          >
-            <option value="status">Status</option>
-            <option value="seatNumber">Seat number</option>
-          </select>
-        </label>
-      </div>
-
       {error && (
         <p role="alert" className="mb-4 rounded-panel bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {error}
@@ -95,85 +73,66 @@ export default function TicketList({ tickets, userId, viewType = "event" }) {
 
       <div className="space-y-8">
         {ticketGroups.map(({ event, tickets: groupTickets }) => (
-          <div key={event?.id ?? "all"}>
-            {event && (
-              <Link href={`/event/${event.id}`} className="mb-3 inline-block font-medium hover:text-primary-text">
-                {event.name}{" "}
-                <span className="font-normal text-muted-foreground">· {formatEventDate(event.starts_at)}</span>
-              </Link>
-            )}
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6">
+          <div key={event.id}>
+            <Link href={`/event/${event.id}`} className="mb-3 inline-block font-medium hover:text-primary-text">
+              {event.name}{" "}
+              <span className="font-normal text-muted-foreground">· {formatEventDate(event.starts_at)}</span>
+            </Link>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {groupTickets.map((ticket) => {
-                const isMine = Boolean(userId) && ticket.owner_id === userId;
+                const isListed = ticket.status === "listed";
                 const isPending = pendingTicketId === ticket.id;
 
                 return (
                   <div
                     key={ticket.id}
-                    className={cn(
-                      "flex flex-col rounded-panel border bg-surface-strong p-3",
-                      isMine ? "border-primary ring-2 ring-primary/30" : "border-surface-border"
-                    )}
+                    className="flex flex-col rounded-panel border border-surface-border bg-surface-strong p-4"
                   >
                     <div className="flex items-baseline justify-between gap-2">
-                      <span className="font-semibold">Seat {ticket.seat_number}</span>
-                      {isMine && (
-                        <span className="text-[11px] font-semibold uppercase tracking-wider text-primary-text">
-                          Yours
+                      <span className="font-semibold">{ticketLabel(ticket)}</span>
+                      {isListed && (
+                        <span className="rounded-full bg-secondary px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-primary-text">
+                          On resale
                         </span>
                       )}
                     </div>
                     <span className="mt-0.5 text-sm text-muted-foreground">
-                      {ticket.status === "listed" ? (
-                        <>
-                          {formatPrice(ticket.list_price_cents)}{" "}
-                          <span className="text-primary-text">resale</span>
-                        </>
-                      ) : (
-                        formatPrice(ticket.price_cents)
-                      )}
+                      {isListed
+                        ? `Listed at ${formatPrice(ticket.list_price_cents)}`
+                        : `Face value ${formatPrice(ticket.price_cents)}`}
                     </span>
 
-                    <div className="mt-3 flex flex-col gap-1.5">
-                      {/* Unsold, or listed by someone else: "Buy" */}
-                      {(ticket.status === "available" || (ticket.status === "listed" && !isMine)) && (
-                        <Button
-                          size="sm"
-                          disabled={isPending}
-                          onClick={() => handleAction(ticket.id, "buy_ticket", { p_ticket_id: ticket.id })}
-                        >
-                          {isPending ? "Buying…" : "Buy"}
-                        </Button>
-                      )}
-                      {/* Yours and not listed: "Sell" */}
-                      {ticket.status === "sold" && isMine && (
-                        <Button size="sm" variant="outline" disabled={isPending} onClick={() => setModal({ type: "list", ticket })}>
-                          Sell
-                        </Button>
-                      )}
-                      {/* Yours and listed: cancel the listing */}
-                      {ticket.status === "listed" && isMine && (
+                    <div className="mt-4 flex gap-2">
+                      {isListed ? (
                         <Button
                           size="sm"
                           variant="danger"
+                          className="flex-1"
                           disabled={isPending}
-                          onClick={() => handleAction(ticket.id, "unlist_ticket", { p_ticket_id: ticket.id })}
+                          onClick={() => handleCancelSale(ticket.id)}
                         >
                           {isPending ? "Cancelling…" : "Cancel sale"}
                         </Button>
-                      )}
-                      {/* Yours: transfer to another user */}
-                      {isMine && (
-                        <Button size="sm" variant="outline" disabled={isPending} onClick={() => setModal({ type: "transfer", ticket })}>
-                          Transfer
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1"
+                          disabled={isPending}
+                          onClick={() => setModal({ type: "list", ticket })}
+                        >
+                          Sell
                         </Button>
                       )}
-                      {/* Owned by someone else and not for sale */}
-                      {ticket.status === "sold" && !isMine && (
-                        <Button size="sm" variant="outline" disabled>
-                          Sold
-                        </Button>
-                      )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1"
+                        disabled={isPending}
+                        onClick={() => setModal({ type: "transfer", ticket })}
+                      >
+                        Transfer
+                      </Button>
                     </div>
                   </div>
                 );

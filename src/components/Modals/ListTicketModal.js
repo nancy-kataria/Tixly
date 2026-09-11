@@ -3,7 +3,7 @@ import { useState } from "react";
 import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
 import Input, { Label } from "@/components/ui/Input";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, ticketLabel } from "@/lib/format";
 
 // Asks for a resale price. onConfirm(priceCents) resolves to an error
 // message, or null on success.
@@ -29,7 +29,7 @@ export default function ListTicketModal({ ticket, onConfirm, onClose }) {
 
   return (
     <Modal
-      title={`Sell seat ${ticket.seat_number}`}
+      title={`Sell ${ticketLabel(ticket)}`}
       description={`Face value ${formatPrice(ticket.price_cents)}. Buyers see your price on the event page, and you keep the ticket until someone buys it.`}
       onClose={onClose}
     >
