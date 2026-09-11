@@ -16,6 +16,11 @@ export function priceLabel(fromPriceCents) {
   return `From ${formatPrice(fromPriceCents)}`;
 }
 
+// "Premium #12" for a ticket row that includes section: { name }.
+export function ticketLabel(ticket) {
+  return `${ticket.section?.name ?? "Ticket"} #${ticket.number}`;
+}
+
 // "Sat, Oct 3", plus the year when it isn't this year.
 export function formatDay(isoString) {
   const date = new Date(isoString);

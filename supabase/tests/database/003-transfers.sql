@@ -4,12 +4,11 @@ select plan(9);
 select tests.create_user('organizer', 'organizer');
 select tests.create_user('sender');
 select tests.create_user('recipient');
-select tests.create_event('Test Show', 'organizer', p_seats => 3);
+select tests.create_event('Test Show', 'organizer', p_capacity => 3);
 
--- The sender owns seats 1 and 2, and seat 2 is listed for resale.
+-- The sender owns tickets #1 and #2, and #2 is listed for resale.
 select tests.authenticate_as('sender');
-select public.buy_ticket(tests.ticket_id('Test Show', 1));
-select public.buy_ticket(tests.ticket_id('Test Show', 2));
+select public.buy_tickets(tests.section_id('Test Show'), 2);
 select public.list_ticket(tests.ticket_id('Test Show', 2), 6000);
 
 select lives_ok(

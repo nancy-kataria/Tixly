@@ -1,8 +1,8 @@
 # Tixly
 
-[![LinkedIn][linkedin-shield]][linkedin-url]
+[![Database tests](https://github.com/nancy-kataria/Tixly/actions/workflows/database-tests.yml/badge.svg)](https://github.com/nancy-kataria/Tixly/actions/workflows/database-tests.yml)
 
-**Tixly** is an event ticketing app, inspired by Ticketmaster. Fans browse events, buy seats, and resell or transfer their tickets. Organizers create venues and events, and Tixly generates a ticket for every seat.
+**Tixly** is an event ticketing app, inspired by Ticketmaster. Fans browse events, buy tickets by section, and resell or transfer them. Organizers create venues and events split into priced sections, and Tixly creates a ticket for every spot.
 
 It started as a web backend school project and has since been rebuilt on Next.js 16 and Supabase.
 
@@ -20,28 +20,31 @@ It started as a web backend school project and has since been rebuilt on Next.js
 **For fans**
 - Browse and search upcoming events
 - Sign in with Google
-- Buy seats, either unsold ones or tickets other fans have listed for resale
+- Buy up to 8 tickets at a time from a section (General, Premium, Front row, …)
+- Buy resale tickets other fans have listed
 - Resell a ticket at your own price, or cancel the listing
 - Transfer a ticket to another user by email
 - View your tickets and transaction history
 
 **For organizers**
 - Become an organizer from the "For organizers" page or your profile
-- Add venues and create events. Tickets are created automatically, one per seat.
+- Add venues and create events with up to 10 sections, each with its own price and capacity
 
 ## How it works
 
 - **Supabase Auth** handles Google sign-in. `src/proxy.js` keeps the session fresh and protects signed-in pages.
 - **Row Level Security** policies decide what each user can read. For example, you only see your own transaction history.
-- **Ticket actions run as Postgres functions** (`buy_ticket`, `list_ticket`, `transfer_ticket`, …). Each one is a single transaction. The seat row is locked during a purchase, so two people can't buy the same seat.
+- **Ticket actions run as Postgres functions** (`buy_tickets`, `buy_resale_ticket`, `list_ticket`, `transfer_ticket`, …), each as a single transaction. `buy_tickets` claims tickets with `FOR UPDATE SKIP LOCKED`, so buyers arriving at the same moment get different tickets instead of waiting on each other, and a ticket can never be sold twice.
 - **Table constraints prevent invalid tickets.** For example, a ticket can't be both unsold and owned, or listed without a price.
+- **Tested with pgTAP.** SQL tests in `supabase/tests` cover buying, resale, transfers, organizer rules and access rules. GitHub Actions runs them on every pull request.
 
 | Table | Stores |
 |---|---|
 | `profiles` | One per user, with a role of `user` or `organizer` |
-| `venues` | Name, address and seat capacity |
+| `venues` | Name, address and capacity |
 | `events` | Organizer, venue, category and date |
-| `tickets` | One per seat, with a status of `available`, `sold` or `listed` |
+| `ticket_sections` | An event's sections, each with a price and capacity |
+| `tickets` | One per spot, numbered within its section, with a status of `available`, `sold` or `listed` |
 | `ticket_transactions` | History of every purchase, resale and transfer |
 
 ## Getting Started
@@ -70,7 +73,7 @@ It started as a web backend school project and has since been rebuilt on Next.js
    npx supabase link --project-ref <project-ref>
    npx supabase db push --include-seed
    ```
-   The demo data is 3 organizers, 5 venues and 10 events. Two demo fans already own a few seats, with some listed for resale.
+   The demo data is 3 organizers, 5 venues and 10 events with 2–3 sections each. Two demo fans already own a few tickets, with some listed for resale.
 
 5. **Run the app** at [http://localhost:3000](http://localhost:3000)
    ```bash
@@ -82,26 +85,24 @@ It started as a web backend school project and has since been rebuilt on Next.js
 ```
 src/
   app/              Pages, plus the /auth/callback route for Google sign-in
-  components/       Event list, ticket grid, modals, navbar
+  components/       Event cards, section picker, resale list, modals, navbar
   context/          Signed-in user state for client components
   lib/supabase/     Supabase clients for the browser, server and proxy
   proxy.js          Session refresh and protected pages
 supabase/
   migrations/       Schema, security rules and ticket functions
+  tests/            pgTAP tests, run by GitHub Actions
   seed.sql          Demo data
 ```
 
 ## Roadmap
 
-- Live seat updates with Supabase Realtime
+- Checkout with Stripe (test mode), with seats held in a cart for 10 minutes
+- Live ticket availability with Supabase Realtime
 - Event images with Supabase Storage
-- Checkout with Stripe (test mode)
 - Organizer dashboard with sales stats
-- Automated tests for the ticket functions
 
 <!-- MARKDOWN LINKS & IMAGES -->
-[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://www.linkedin.com/in/nancy-kataria8/
 [Next.js]: https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white
 [Next.js-url]: https://nextjs.org/
 [React]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB

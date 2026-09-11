@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { History, MapPin, Mic2, Send, Tag, Ticket } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import EventImage from "@/components/EventImage";
-import TicketList from "@/components/tickets/TicketList";
+import SectionPicker from "@/components/tickets/SectionPicker";
+import ResaleList from "@/components/tickets/ResaleList";
 import Card from "@/components/ui/Card";
 import Eyebrow from "@/components/ui/Eyebrow";
 import { buttonClasses } from "@/components/ui/Button";
@@ -20,17 +21,20 @@ export default async function EventPage({ params }) {
   const { id } = await params;
   const supabase = await createClient();
 
-  const [eventResult, ticketsResult, claimsResult] = await Promise.all([
+  const [eventResult, sectionsResult, listingsResult, claimsResult] = await Promise.all([
     supabase
       .from("events")
-      .select("id, name, artist, category, starts_at, venue:venues(name, address, capacity), organizer:profiles(name)")
+      .select("id, name, artist, category, starts_at, venue:venues(name, address), organizer:profiles(name)")
       .eq("id", id)
       .maybeSingle(),
+    supabase.from("section_availability").select("*").eq("event_id", id).order("sort_order"),
     supabase
       .from("tickets")
-      .select("id, seat_number, price_cents, status, list_price_cents, owner_id")
+      .select("id, number, price_cents, list_price_cents, owner_id, section:ticket_sections(name)")
       .eq("event_id", id)
-      .order("seat_number"),
+      .eq("status", "listed")
+      .order("list_price_cents")
+      .limit(50),
     supabase.auth.getClaims(),
   ]);
 
@@ -38,11 +42,22 @@ export default async function EventPage({ params }) {
   const event = eventResult.data;
   if (!event) notFound();
 
-  const tickets = ticketsResult.data ?? [];
+  const sections = sectionsResult.data ?? [];
+  const listings = listingsResult.data ?? [];
   const userId = claimsResult.data?.claims?.sub ?? null;
-  const unsoldCount = tickets.filter((t) => t.status === "available").length;
-  const resaleCount = tickets.filter((t) => t.status === "listed").length;
-  const ownedCount = userId ? tickets.filter((t) => t.owner_id === userId).length : 0;
+
+  const { count: ownedCount } = userId
+    ? await supabase
+        .from("tickets")
+        .select("id", { count: "exact", head: true })
+        .eq("event_id", id)
+        .eq("owner_id", userId)
+    : { count: 0 };
+
+  const capacity = sections.reduce((sum, s) => sum + s.capacity, 0);
+  const availableCount = sections.reduce((sum, s) => sum + s.available_count, 0);
+  const resaleCount = sections.reduce((sum, s) => sum + s.resale_count, 0);
+  const hasStarted = new Date(event.starts_at) <= new Date();
 
   return (
     <div className="mx-auto grid max-w-7xl grid-cols-1 items-start gap-8 px-6 py-10 lg:grid-cols-[minmax(0,1fr)_22rem]">
@@ -63,14 +78,21 @@ export default async function EventPage({ params }) {
           <Detail
             icon={Ticket}
             label="Tickets left"
-            value={`${unsoldCount} of ${tickets.length}`}
+            value={`${availableCount.toLocaleString("en-US")} of ${capacity.toLocaleString("en-US")}`}
             note={resaleCount > 0 ? `${resaleCount} on resale` : "No resale tickets yet"}
           />
         </dl>
 
         <h2 className="mt-10 text-2xl font-medium tracking-tight">Choose your tickets</h2>
+        {hasStarted && <p className="mt-1 text-sm text-muted-foreground">This event has already started.</p>}
         <div className="mt-4">
-          <TicketList tickets={tickets} userId={userId} />
+          <SectionPicker sections={sections} userId={userId} hasStarted={hasStarted} />
+        </div>
+
+        <h2 className="mt-10 text-2xl font-medium tracking-tight">Resale tickets</h2>
+        <p className="mt-1 text-sm text-muted-foreground">Sold by other fans, at the price they set.</p>
+        <div className="mt-4">
+          <ResaleList listings={listings} userId={userId} />
         </div>
       </Card>
 

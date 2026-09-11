@@ -1,5 +1,9 @@
--- Demo data: 3 organizers, 2 fans, 5 venues and 10 events.
--- Safe to run more than once. The demo accounts have no password, so nobody
+-- Demo data: 3 organizers, 2 fans, 5 venues and 10 events with 2-3 ticket
+-- sections each.
+--
+-- Safe to run more than once. Each run resets the demo events' sections,
+-- tickets and ticket history to this starting state; events by other
+-- organizers are untouched. The demo accounts have no password, so nobody
 -- can sign in as them.
 
 -- Demo users. The on_auth_user_created trigger creates their profiles.
@@ -31,12 +35,13 @@ where id in (
 
 insert into public.venues (id, name, address, capacity, created_by)
 values
-  ('00000000-0000-4000-b000-000000000001', 'Harbor Amphitheater', '120 Bayfront Dr, Long Beach, CA',  120, '00000000-0000-4000-a000-000000000001'),
-  ('00000000-0000-4000-b000-000000000002', 'The Velvet Room',     '88 Sunset Blvd, Los Angeles, CA',   40, '00000000-0000-4000-a000-000000000001'),
-  ('00000000-0000-4000-b000-000000000003', 'Summit Arena',        '500 Arena Way, Anaheim, CA',       200, '00000000-0000-4000-a000-000000000002'),
-  ('00000000-0000-4000-b000-000000000004', 'Grand Oak Theater',   '2150 Oak St, Pasadena, CA',         80, '00000000-0000-4000-a000-000000000003'),
-  ('00000000-0000-4000-b000-000000000005', 'Riverside Field',     '1 Stadium Pl, Riverside, CA',      160, '00000000-0000-4000-a000-000000000002')
-on conflict (id) do nothing;
+  ('00000000-0000-4000-b000-000000000001', 'Harbor Amphitheater', '120 Bayfront Dr, Long Beach, CA', 2000, '00000000-0000-4000-a000-000000000001'),
+  ('00000000-0000-4000-b000-000000000002', 'The Velvet Room',     '88 Sunset Blvd, Los Angeles, CA',   250, '00000000-0000-4000-a000-000000000001'),
+  ('00000000-0000-4000-b000-000000000003', 'Summit Arena',        '500 Arena Way, Anaheim, CA',       6000, '00000000-0000-4000-a000-000000000002'),
+  ('00000000-0000-4000-b000-000000000004', 'Grand Oak Theater',   '2150 Oak St, Pasadena, CA',         800, '00000000-0000-4000-a000-000000000003'),
+  ('00000000-0000-4000-b000-000000000005', 'Riverside Field',     '1 Stadium Pl, Riverside, CA',      5000, '00000000-0000-4000-a000-000000000002')
+on conflict (id) do update
+  set name = excluded.name, address = excluded.address, capacity = excluded.capacity;
 
 -- Events. Times are local to Los Angeles.
 insert into public.events (id, organizer_id, venue_id, name, artist, category, starts_at)
@@ -69,48 +74,104 @@ from (values
 ) as e(id, organizer_id, venue_id, name, artist, category, local_time)
 on conflict (id) do nothing;
 
--- One ticket per venue seat, at each event's face value.
-insert into public.tickets (event_id, seat_number, price_cents)
-select p.event_id, seat, p.price_cents
-from (values
-  ('00000000-0000-4000-c000-000000000001'::uuid, 6500),
-  ('00000000-0000-4000-c000-000000000002', 4500),
-  ('00000000-0000-4000-c000-000000000003', 3500),
-  ('00000000-0000-4000-c000-000000000004', 8900),
-  ('00000000-0000-4000-c000-000000000005', 3000),
-  ('00000000-0000-4000-c000-000000000006', 4000),
-  ('00000000-0000-4000-c000-000000000007', 5500),
-  ('00000000-0000-4000-c000-000000000008', 2500),
-  ('00000000-0000-4000-c000-000000000009', 5000),
-  ('00000000-0000-4000-c000-000000000010', 6000)
-) as p(event_id, price_cents)
-join public.events e on e.id = p.event_id
-join public.venues v on v.id = e.venue_id
-cross join lateral generate_series(1, v.capacity) as seat
-on conflict (event_id, seat_number) do nothing;
+-- Reset the demo events' tickets. Ticket history goes first because it
+-- points at the tickets; deleting a section deletes its tickets.
+delete from public.ticket_transactions tt
+using public.tickets t, public.events e
+where tt.ticket_id = t.id
+  and e.id = t.event_id
+  and e.organizer_id in (
+    '00000000-0000-4000-a000-000000000001',
+    '00000000-0000-4000-a000-000000000002',
+    '00000000-0000-4000-a000-000000000003'
+  );
 
--- A few seats already bought by the demo fans, some listed for resale,
+delete from public.ticket_sections s
+using public.events e
+where e.id = s.event_id
+  and e.organizer_id in (
+    '00000000-0000-4000-a000-000000000001',
+    '00000000-0000-4000-a000-000000000002',
+    '00000000-0000-4000-a000-000000000003'
+  );
+
+-- Sections. Each event's capacities add up to its venue's capacity.
+insert into public.ticket_sections (event_id, sort_order, name, description, price_cents, capacity)
+values
+  -- Neon Tides @ Harbor Amphitheater (2,000)
+  ('00000000-0000-4000-c000-000000000001', 1, 'General',           'Standing · open floor',            4200, 1400),
+  ('00000000-0000-4000-c000-000000000001', 2, 'Premium',           'Reserved · center',                8500,  560),
+  ('00000000-0000-4000-c000-000000000001', 3, 'Front row',         'Best view in the house',          12000,   40),
+  -- Midnight Static @ The Velvet Room (250)
+  ('00000000-0000-4000-c000-000000000002', 1, 'General admission', 'Standing',                         4500,  200),
+  ('00000000-0000-4000-c000-000000000002', 2, 'Balcony',           'Reserved seats · early entry',     7500,   50),
+  -- Golden Hour Jazz Night @ The Velvet Room (250)
+  ('00000000-0000-4000-c000-000000000003', 1, 'General admission', 'Standing by the bar',              3500,  190),
+  ('00000000-0000-4000-c000-000000000003', 2, 'Table seating',     'Shared tables by the stage',       5500,   60),
+  -- Echo Valley Winter Festival @ Summit Arena (6,000)
+  ('00000000-0000-4000-c000-000000000004', 1, 'General',           'Festival floor',                   8900, 5000),
+  ('00000000-0000-4000-c000-000000000004', 2, 'VIP',               'Lounge access · fast-track entry', 17900, 1000),
+  -- Rockets vs. Mariners @ Riverside Field (5,000)
+  ('00000000-0000-4000-c000-000000000005', 1, 'Upper deck',        null,                               3000, 3000),
+  ('00000000-0000-4000-c000-000000000005', 2, 'Lower bowl',        'Closer to the action',             5500, 1800),
+  ('00000000-0000-4000-c000-000000000005', 3, 'Field level',       'Behind home plate',               12000,  200),
+  -- SoCal Derby @ Riverside Field (5,000)
+  ('00000000-0000-4000-c000-000000000006', 1, 'Supporters'' end',  'Standing · home fans',             4000, 2500),
+  ('00000000-0000-4000-c000-000000000006', 2, 'Main stand',        'Reserved seating',                 6500, 2400),
+  ('00000000-0000-4000-c000-000000000006', 3, 'Pitchside',         'Row A',                           14000,  100),
+  -- Summit Showdown @ Summit Arena (6,000)
+  ('00000000-0000-4000-c000-000000000007', 1, 'Upper level',       null,                               5500, 4000),
+  ('00000000-0000-4000-c000-000000000007', 2, 'Lower level',       null,                               9500, 1900),
+  ('00000000-0000-4000-c000-000000000007', 3, 'Courtside',         'Floor seats',                     25000,  100),
+  -- Stand-Up Saturdays @ The Velvet Room (250)
+  ('00000000-0000-4000-c000-000000000008', 1, 'General admission', null,                               2500,  220),
+  ('00000000-0000-4000-c000-000000000008', 2, 'Front tables',      'Closest to the stage',             4500,   30),
+  -- The Last Lighthouse @ Grand Oak Theater (800)
+  ('00000000-0000-4000-c000-000000000009', 1, 'Balcony',           null,                               5000,  300),
+  ('00000000-0000-4000-c000-000000000009', 2, 'Orchestra',         'Main floor',                       8500,  450),
+  ('00000000-0000-4000-c000-000000000009', 3, 'Box seats',         'Private boxes of four',           14000,   50),
+  -- A Winter's Tale @ Grand Oak Theater (800)
+  ('00000000-0000-4000-c000-000000000010', 1, 'Balcony',           null,                               6000,  300),
+  ('00000000-0000-4000-c000-000000000010', 2, 'Orchestra',         'Main floor',                       9500,  450),
+  ('00000000-0000-4000-c000-000000000010', 3, 'Box seats',         'Private boxes of four',           15000,   50);
+
+-- One ticket per spot in each demo section, at the section's price.
+insert into public.tickets (event_id, section_id, number, price_cents)
+select s.event_id, s.id, n, s.price_cents
+from public.ticket_sections s
+join public.events e on e.id = s.event_id
+cross join lateral generate_series(1, s.capacity) as n
+where e.organizer_id in (
+  '00000000-0000-4000-a000-000000000001',
+  '00000000-0000-4000-a000-000000000002',
+  '00000000-0000-4000-a000-000000000003'
+);
+
+-- A few tickets already bought by the demo fans, some listed for resale,
 -- so the resale flow has something to show.
 update public.tickets t
 set owner_id = d.owner_id,
     status = d.status::public.ticket_status,
     list_price_cents = d.list_price_cents
 from (values
-  -- Jordan: 3 seats at Neon Tides (one listed), 1 at The Last Lighthouse
-  ('00000000-0000-4000-c000-000000000001'::uuid, 1, '00000000-0000-4000-a000-000000000011'::uuid, 'sold',   null::int),
-  ('00000000-0000-4000-c000-000000000001',       2, '00000000-0000-4000-a000-000000000011',       'sold',   null),
-  ('00000000-0000-4000-c000-000000000001',       3, '00000000-0000-4000-a000-000000000011',       'listed', 8000),
-  ('00000000-0000-4000-c000-000000000009',      11, '00000000-0000-4000-a000-000000000011',       'sold',   null),
-  -- Sam: 2 seats at Midnight Static (one listed), 1 listed at The Last Lighthouse
-  ('00000000-0000-4000-c000-000000000002',       5, '00000000-0000-4000-a000-000000000012',       'sold',   null),
-  ('00000000-0000-4000-c000-000000000002',       6, '00000000-0000-4000-a000-000000000012',       'listed', 6000),
-  ('00000000-0000-4000-c000-000000000009',      10, '00000000-0000-4000-a000-000000000012',       'listed', 5500)
-) as d(event_id, seat_number, owner_id, status, list_price_cents)
-where t.event_id = d.event_id
-  and t.seat_number = d.seat_number
+  -- Jordan: 3 Premium at Neon Tides (one listed), 1 Orchestra at The Last Lighthouse
+  ('00000000-0000-4000-c000-000000000001'::uuid, 'Premium',           1, '00000000-0000-4000-a000-000000000011'::uuid, 'sold',   null::int),
+  ('00000000-0000-4000-c000-000000000001',       'Premium',           2, '00000000-0000-4000-a000-000000000011',       'sold',   null),
+  ('00000000-0000-4000-c000-000000000001',       'Premium',           3, '00000000-0000-4000-a000-000000000011',       'listed', 11000),
+  ('00000000-0000-4000-c000-000000000009',       'Orchestra',         1, '00000000-0000-4000-a000-000000000011',       'sold',   null),
+  -- Sam: 2 at Midnight Static (one listed), 1 listed Orchestra at The Last Lighthouse
+  ('00000000-0000-4000-c000-000000000002',       'General admission', 1, '00000000-0000-4000-a000-000000000012',       'sold',   null),
+  ('00000000-0000-4000-c000-000000000002',       'General admission', 2, '00000000-0000-4000-a000-000000000012',       'listed', 6000),
+  ('00000000-0000-4000-c000-000000000009',       'Orchestra',         2, '00000000-0000-4000-a000-000000000012',       'listed', 9500)
+) as d(event_id, section_name, number, owner_id, status, list_price_cents),
+  public.ticket_sections s
+where s.event_id = d.event_id
+  and s.name = d.section_name
+  and t.section_id = s.id
+  and t.number = d.number
   and t.status = 'available';
 
--- Record those seats as purchases from the event.
+-- Record those tickets as purchases from the event.
 insert into public.ticket_transactions (ticket_id, from_user, to_user, price_cents, kind)
 select t.id, null::uuid, t.owner_id, t.price_cents, 'purchase'::public.transaction_kind
 from public.tickets t

@@ -1,75 +1,105 @@
 begin;
-select plan(9);
+select plan(13);
 
 select tests.create_user('organizer', 'organizer');
 select tests.create_user('fan');
 select tests.create_user('other_fan');
-select tests.create_event('Test Show', 'organizer', p_seats => 2);
-select tests.create_event('Past Show', 'organizer', p_seats => 1, p_starts_at => now() - interval '1 hour');
+select tests.create_event('Test Show', 'organizer', p_capacity => 3);
+select tests.add_section('Test Show', 'Premium', 2, 9000);
+select tests.create_event('Past Show', 'organizer', p_capacity => 1, p_starts_at => now() - interval '1 hour');
 
 -- Signed-out visitors
 select tests.clear_authentication();
 
 select throws_ok(
-  $$ select public.buy_ticket(tests.ticket_id('Test Show', 1)) $$,
-  '42501', 'permission denied for function buy_ticket',
+  $$ select public.buy_tickets(tests.section_id('Test Show'), 1) $$,
+  '42501', 'permission denied for function buy_tickets',
   'signed-out visitors cannot buy tickets'
 );
 
--- Buying an unsold seat
+-- Buying a quantity from a section
 select tests.authenticate_as('fan');
 
 select lives_ok(
-  $$ select public.buy_ticket(tests.ticket_id('Test Show', 1)) $$,
-  'a fan can buy an unsold seat'
+  $$ select public.buy_tickets(tests.section_id('Test Show'), 2) $$,
+  'a fan can buy several tickets from a section'
 );
 
-select ok(
-  (select status = 'sold' and owner_id = tests.user_id('fan') from tests.ticket('Test Show', 1)),
-  'the seat is now sold to that fan'
+select is(
+  (select count(*) from public.tickets
+   where section_id = tests.section_id('Test Show')
+     and owner_id = tests.user_id('fan')
+     and status = 'sold'),
+  2::bigint,
+  'the fan now owns exactly that many tickets'
 );
 
 select is(
   (select count(*) from public.ticket_transactions
-   where ticket_id = tests.ticket_id('Test Show', 1)
+   where to_user = tests.user_id('fan')
      and kind = 'purchase'
      and from_user is null
-     and to_user = tests.user_id('fan')
      and price_cents = 5000),
-  1::bigint,
-  'the purchase is recorded at face value'
+  2::bigint,
+  'each ticket is recorded as a purchase at the section price'
 );
 
--- A seat can only be sold once
+select is(
+  (select count(*) from public.tickets
+   where section_id = tests.section_id('Test Show', 'Premium') and status = 'available'),
+  2::bigint,
+  'other sections are not affected'
+);
+
+select throws_ok(
+  $$ select public.buy_tickets(tests.section_id('Test Show', 'Premium'), 0) $$,
+  'P0001', 'You can buy between 1 and 8 tickets at a time',
+  'the quantity must be at least 1'
+);
+
+select throws_ok(
+  $$ select public.buy_tickets(tests.section_id('Test Show', 'Premium'), 9) $$,
+  'P0001', 'You can buy between 1 and 8 tickets at a time',
+  'no more than 8 tickets per purchase'
+);
+
+-- Running out
 select tests.authenticate_as('other_fan');
 
 select throws_ok(
-  $$ select public.buy_ticket(tests.ticket_id('Test Show', 1)) $$,
-  'P0001', 'This ticket is not for sale',
-  'a sold seat cannot be bought again'
+  $$ select public.buy_tickets(tests.section_id('Test Show'), 2) $$,
+  'P0001', 'Only 1 left in this section',
+  'asking for more tickets than are left fails'
 );
 
-select ok(
-  (select owner_id = tests.user_id('fan') from tests.ticket('Test Show', 1)),
-  'the first buyer still owns the seat'
+select is(
+  (select count(*) from public.tickets where owner_id = tests.user_id('other_fan')),
+  0::bigint,
+  'a failed purchase buys nothing (all or nothing)'
 );
 
 select lives_ok(
-  $$ select public.buy_ticket(tests.ticket_id('Test Show', 2)) $$,
-  'another fan can still buy a different seat'
+  $$ select public.buy_tickets(tests.section_id('Test Show'), 1) $$,
+  'the last ticket can still be bought'
+);
+
+select throws_ok(
+  $$ select public.buy_tickets(tests.section_id('Test Show'), 1) $$,
+  'P0001', 'This section is sold out',
+  'a sold-out section says so'
 );
 
 -- Other failures
 select throws_ok(
-  $$ select public.buy_ticket(tests.ticket_id('Past Show', 1)) $$,
+  $$ select public.buy_tickets(tests.section_id('Past Show'), 1) $$,
   'P0001', 'This event has already started',
   'tickets cannot be bought once the event has started'
 );
 
 select throws_ok(
-  $$ select public.buy_ticket(gen_random_uuid()) $$,
-  'P0001', 'Ticket not found',
-  'buying a ticket that does not exist fails cleanly'
+  $$ select public.buy_tickets(gen_random_uuid(), 1) $$,
+  'P0001', 'Section not found',
+  'buying from a section that does not exist fails cleanly'
 );
 
 select * from finish();

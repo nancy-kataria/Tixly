@@ -1,15 +1,16 @@
 begin;
-select plan(13);
+select plan(14);
 
 select tests.create_user('organizer', 'organizer');
 select tests.create_user('fan_a');
 select tests.create_user('fan_b');
-select tests.create_event('Test Show', 'organizer', p_seats => 2);
+select tests.create_event('Test Show', 'organizer', p_capacity => 2);
 
+-- Tickets are handed out in number order: fan_a gets #1, fan_b gets #2.
 select tests.authenticate_as('fan_a');
-select public.buy_ticket(tests.ticket_id('Test Show', 1));
+select public.buy_tickets(tests.section_id('Test Show'), 1);
 select tests.authenticate_as('fan_b');
-select public.buy_ticket(tests.ticket_id('Test Show', 2));
+select public.buy_tickets(tests.section_id('Test Show'), 1);
 
 -- What a signed-in fan can see
 select tests.authenticate_as('fan_a');
@@ -38,7 +39,7 @@ select is(
   'other fans'' profiles are hidden'
 );
 
--- Tickets only change through the ticket functions
+-- Tickets, sections and history only change through the ticket functions
 with updated as (
   update public.tickets
   set owner_id = tests.user_id('fan_a')
@@ -60,6 +61,13 @@ select throws_ok(
   'transactions cannot be written directly'
 );
 
+select throws_ok(
+  $$ insert into public.ticket_sections (event_id, name, price_cents, capacity)
+     select id, 'Free for all', 0, 100 from public.events where name = 'Test Show' $$,
+  '42501', 'new row violates row-level security policy for table "ticket_sections"',
+  'sections cannot be added directly'
+);
+
 -- What a signed-out visitor can see
 select tests.clear_authentication();
 
@@ -72,7 +80,7 @@ select is(
 select is(
   (select count(*) from public.tickets where event_id = (select id from public.events where name = 'Test Show')),
   2::bigint,
-  'anyone can see seat availability'
+  'anyone can see ticket availability'
 );
 
 -- Table constraints hold even for direct writes that skip the access rules
@@ -91,10 +99,10 @@ select throws_like(
 );
 
 select throws_like(
-  $$ insert into public.tickets (event_id, seat_number, price_cents)
-     select event_id, 1, 100 from public.tickets where id = tests.ticket_id('Test Show', 1) $$,
+  $$ insert into public.tickets (event_id, section_id, number, price_cents)
+     select event_id, section_id, 1, 100 from public.tickets where id = tests.ticket_id('Test Show', 1) $$,
   '%duplicate key%',
-  'an event cannot have two tickets for the same seat'
+  'a section cannot have two tickets with the same number'
 );
 
 select throws_like(

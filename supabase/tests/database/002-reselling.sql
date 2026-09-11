@@ -1,20 +1,21 @@
 begin;
-select plan(13);
+select plan(14);
 
 select tests.create_user('organizer', 'organizer');
 select tests.create_user('seller');
 select tests.create_user('buyer');
-select tests.create_event('Test Show', 'organizer', p_seats => 2);
+select tests.create_event('Test Show', 'organizer', p_capacity => 2);
 
--- The seller owns seat 1. Seat 2 stays unsold.
+-- The seller buys one ticket. Tickets are handed out in number order, so
+-- it's #1; #2 stays unsold.
 select tests.authenticate_as('seller');
-select public.buy_ticket(tests.ticket_id('Test Show', 1));
+select public.buy_tickets(tests.section_id('Test Show'), 1);
 
 -- Listing
 select throws_ok(
   $$ select public.list_ticket(tests.ticket_id('Test Show', 2), 7500) $$,
   'P0001', 'You can only list a ticket you own, for an upcoming event, that isn''t already listed',
-  'an unsold seat cannot be listed for resale'
+  'an unsold ticket cannot be listed for resale'
 );
 
 select throws_ok(
@@ -40,7 +41,7 @@ select throws_ok(
 );
 
 select throws_ok(
-  $$ select public.buy_ticket(tests.ticket_id('Test Show', 1)) $$,
+  $$ select public.buy_resale_ticket(tests.ticket_id('Test Show', 1)) $$,
   'P0001', 'You already own this ticket',
   'sellers cannot buy their own listing'
 );
@@ -60,8 +61,14 @@ select throws_ok(
   'users cannot cancel someone else''s listing'
 );
 
+select throws_ok(
+  $$ select public.buy_resale_ticket(tests.ticket_id('Test Show', 2)) $$,
+  'P0001', 'This ticket is not for sale',
+  'unsold tickets are bought by section, not on resale'
+);
+
 select lives_ok(
-  $$ select public.buy_ticket(tests.ticket_id('Test Show', 1)) $$,
+  $$ select public.buy_resale_ticket(tests.ticket_id('Test Show', 1)) $$,
   'a buyer can buy a listed ticket'
 );
 

@@ -92,11 +92,11 @@ function Page() {
           </div>
 
           <div>
-            <Label htmlFor="capacity">Seats (up to 1,000)</Label>
+            <Label htmlFor="capacity">Capacity (up to 100,000 people)</Label>
             <Input
               type="number"
               min="1"
-              max="1000"
+              max="100000"
               id="capacity"
               name="capacity"
               value={formData.capacity}
